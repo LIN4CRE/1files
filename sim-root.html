@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="SIM://ROOT — the hacker's field guide to your SIM card: anatomy, pinout intel, and a 100% client-side digital infiltration lab.">
+<meta name="theme-color" content="#07080c">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:title" content="SIM://ROOT — Hacker's Guide to Free Living">
+<meta property="og:description" content="SIM card anatomy, pinout intel, and a full digital infiltration lab. Zero packets leave the page.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dlinacre.github.io/sim-root/">
+<meta property="og:image" content="https://dlinacre.github.io/sim-root/assets/banner.png">
+<meta name="twitter:card" content="summary_large_image">
 <title>SIM://ROOT — Hacker's Guide to Free Living</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Share+Tech+Mono&display=swap');
@@ -22,6 +31,21 @@
   --red:#FF2E4D;
   --mag:#FF3DF2;
 }
+/* THEMES */
+body.theme-oled{--bg:#000000;--bg2:#07080a;--panel:#060709;--panel2:#0a0b0e;--line:#15171f;--line2:#1b2130}
+body.theme-oled .scanlines{opacity:.22}
+body.theme-light{
+  --bg:#e9edf3; --bg2:#f7f9fc; --panel:#ffffff; --panel2:#eef1f7;
+  --line:#c9d2df; --line2:#b6c1d1; --text:#101720; --muted:#3f4d63; --dim:#6d7c95;
+  --acid:#007a41;
+}
+body.theme-light nav{background:rgba(233,237,243,.92)}
+body.theme-light .ticker{background:#dfe5ee}
+body.theme-light .node{background:#f2f5fa}
+body.theme-light .term.mini{background:#f4f7fa;color:#3f4d63}
+body.theme-light .highlight-box{background:#f4f6fa}
+body.theme-light .hud{background:#ffffffd9;color:#45536a}
+body.theme-light .badge{background:#007a4112;border-color:#007a4166}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
@@ -57,10 +81,9 @@ body::before{
 }
 a{color:var(--acid)}
 .wrap{width:min(1220px,calc(100% - 32px)); margin-inline:auto}
+:focus-visible{outline:2px solid var(--acid); outline-offset:2px}
 
 /* ============ INFILTRATION ADD-ONS (CSS) ============ */
-
-/* boot overlay */
 #boot{
   position:fixed; inset:0; z-index:2500;
   background:#04060a;
@@ -80,13 +103,9 @@ a{color:var(--acid)}
   letter-spacing:.24em; text-align:center;
   animation:blink 1.4s steps(2) infinite;
 }
-
-/* matrix rain */
 #rain{position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none; transition:opacity .6s}
 body.stealth #rain{opacity:.025}
 body.stealth .scanlines{opacity:.18}
-
-/* interception ticker */
 .ticker{
   border-bottom:1px solid var(--line); background:#0a0d13;
   overflow:hidden; height:26px; display:flex; align-items:center;
@@ -101,8 +120,6 @@ body.stealth .scanlines{opacity:.18}
 .ticker-track span{margin:0 20px}
 .ticker-track b{color:var(--acid); font-weight:700}
 @keyframes marq{to{transform:translateX(-50%)}}
-
-/* HUD */
 .hud{
   position:fixed; bottom:12px; z-index:60;
   font-size:.62rem; letter-spacing:.18em; color:var(--dim);
@@ -113,9 +130,8 @@ body.stealth .scanlines{opacity:.18}
 .hud-l{left:12px}
 .hud-r{right:12px}
 .hud-r .rv{color:var(--acid)}
-
-/* lab layout */
 .lab-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.span2{grid-column:1/-1}
 .lab-panel{
   border:1px solid var(--line);
   background:linear-gradient(180deg,var(--panel2),var(--panel));
@@ -129,8 +145,6 @@ body.stealth .scanlines{opacity:.18}
 .lab-live{color:var(--acid); animation:pulse 2s infinite; white-space:nowrap}
 .tiny{font-size:.75rem; color:var(--dim); margin:0 0 10px}
 .fineprint{color:var(--dim); font-size:.72rem; letter-spacing:.05em; margin-top:16px; line-height:1.5}
-
-/* buttons */
 .btn{
   font-family:inherit; cursor:pointer;
   background:#00ff8812; color:var(--acid);
@@ -146,12 +160,8 @@ body.stealth .scanlines{opacity:.18}
 .btn-amber:hover{background:#ffd60024; box-shadow:0 0 18px #ffd60022}
 .btn-ghost{background:#ffffff08; color:var(--muted); border-color:var(--line2)}
 .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0}
-
-/* progress bar */
 .pbar{height:6px; border:1px solid #00ff8833; background:#00ff8808; border-radius:4px; overflow:hidden; margin:10px 0 2px}
 .pbar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#00ff8866,var(--acid)); box-shadow:0 0 12px var(--acid); transition:width .45s}
-
-/* term colors (global utils) */
 .term.mini{
   max-height:210px; min-height:120px; background:#05080bd8;
   border:1px solid var(--line); border-radius:8px; padding:12px; font-size:.76rem;
@@ -160,8 +170,6 @@ body.stealth .scanlines{opacity:.18}
 .ok{color:var(--acid)} .warn{color:var(--amber)} .bad{color:var(--red)} .c2{color:var(--cyan)}
 .term.mini .comment{color:#4a5466}
 .term.mini b, .shellout b{color:var(--text)}
-
-/* hex dump */
 .hex{
   font-size:.68rem; line-height:1.5; color:#6fd9a4;
   background:#04070a; border:1px dashed #00ff8822;
@@ -169,8 +177,6 @@ body.stealth .scanlines{opacity:.18}
   overflow:hidden; white-space:pre; min-height:96px;
 }
 .hex .addr{color:var(--dim)} .hex .asc{color:#3f4a5c}
-
-/* handshake nodes */
 .nodes{display:flex; gap:8px; margin:6px 0 4px; flex-wrap:wrap}
 .node{
   flex:1; min-width:104px; text-align:center;
@@ -183,8 +189,6 @@ body.stealth .scanlines{opacity:.18}
 .node.hot{border-color:var(--acid); color:var(--acid); box-shadow:0 0 16px #00ff8822 inset, 0 0 16px #00ff8815; transform:translateY(-2px)}
 .node.evil{border-color:var(--red); color:var(--red); box-shadow:0 0 16px #ff2e4d22 inset, 0 0 16px #ff2e4d15; transform:translateY(-2px)}
 .node.meek{opacity:.38}
-
-/* radar */
 .radarwrap{display:grid; grid-template-columns:190px 1fr; gap:12px; align-items:start}
 .radar{width:100%; aspect-ratio:1; display:block}
 .radar .ring{fill:none; stroke:#00ff8830; stroke-width:1; transition:stroke .5s}
@@ -199,8 +203,6 @@ body.stealth .scanlines{opacity:.18}
 #radarBox.dark .ring{stroke:#253047}
 #radarBox.dark .axis{stroke:#1b2233}
 .rlog{min-height:190px}
-
-/* shell */
 .shell-panel{padding:0; display:flex; flex-direction:column}
 .shellout{
   padding:16px; min-height:170px; max-height:236px; overflow:auto;
@@ -213,10 +215,125 @@ body.stealth .scanlines{opacity:.18}
   color:var(--text); font:inherit; font-size:.8rem; caret-color:var(--acid);
 }
 .shell-in::placeholder{color:var(--dim)}
-
-/* reveal on scroll */
 .reveal{opacity:0; transform:translateY(16px); transition:opacity .7s ease, transform .7s ease}
 .reveal.in{opacity:1; transform:none}
+
+/* ============ MERGED FEATURES FROM LIN4CRE/simroot (CSS) ============ */
+.skip{
+  position:fixed; left:12px; top:-64px; z-index:3000;
+  background:var(--acid); color:#04140b; padding:8px 14px;
+  font-size:.75rem; font-weight:800; border-radius:6px;
+  transition:top .2s; text-decoration:none; letter-spacing:.08em;
+}
+.skip:focus{top:12px}
+.icobtn{
+  font-family:inherit; cursor:pointer; background:transparent;
+  border:1px solid var(--line2); color:var(--muted);
+  font-size:.66rem; letter-spacing:.1em; border-radius:6px;
+  padding:5px 9px; transition:.15s; white-space:nowrap;
+}
+.icobtn:hover{border-color:var(--acid); color:var(--acid)}
+.nav-icos{display:flex; gap:8px; align-items:center}
+/* modals */
+.veil{
+  position:fixed; inset:0; z-index:2000; display:none;
+  align-items:center; justify-content:center; padding:20px;
+  background:#04060ae6; backdrop-filter:blur(6px);
+}
+.veil.on{display:flex}
+.sheet{
+  width:min(500px,95vw); max-height:85vh; overflow:auto;
+  background:var(--panel); border:1px solid var(--line2);
+  border-radius:14px; padding:20px;
+  box-shadow:0 30px 80px #000c;
+}
+.sheet h3{margin:0 0 4px; font-size:.9rem; letter-spacing:.16em; text-transform:uppercase; color:var(--acid)}
+.sheet .sub2{color:var(--dim); font-size:.7rem; letter-spacing:.08em; margin:0 0 14px}
+.setrow{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  border:1px solid var(--line); background:var(--panel2);
+  padding:10px 12px; border-radius:8px; margin:8px 0; font-size:.78rem; color:var(--muted);
+}
+.setrow input[type=checkbox]{width:16px;height:16px;accent-color:var(--acid);cursor:pointer}
+.setrow .seg{display:flex;gap:6px}
+.seg button{
+  font-family:inherit;cursor:pointer;font-size:.62rem;letter-spacing:.1em;
+  border:1px solid var(--line2);background:transparent;color:var(--dim);
+  padding:4px 9px;border-radius:5px;text-transform:uppercase;transition:.15s;
+}
+.seg button.on{border-color:var(--acid);color:var(--acid);background:#00ff8812}
+.krow{display:flex;justify-content:space-between;gap:12px;padding:7px 4px;border-bottom:1px dashed var(--line);font-size:.74rem;color:var(--muted)}
+.krow:last-child{border-bottom:0}
+kbd{
+  background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;
+  border-radius:5px;padding:1px 8px;font-size:.68rem;color:var(--acid);font-family:inherit;
+}
+.vclose{float:right;background:transparent;border:0;color:var(--dim);font-size:1.1rem;cursor:pointer}
+.vclose:hover{color:var(--text)}
+/* interactive SIM chip diagram */
+.chip-stage{display:grid;grid-template-columns:1.04fr .96fr;gap:20px;align-items:start;margin:6px 0 26px}
+.chipframe{border:1px solid var(--line2);background:#0b0e14;border-radius:12px;padding:14px}
+body.theme-light .chipframe{background:#f0f3f8}
+.chipframe .lab-head{margin-bottom:8px}
+.pad{cursor:pointer}
+.pad rect{transition:.2s}
+.pad:hover rect,.pad.on rect{stroke-width:3}
+.pad text{pointer-events:none}
+.dossier{border:1px solid var(--line2);background:linear-gradient(180deg,var(--panel2),var(--panel));border-radius:12px;padding:16px;min-height:280px}
+.dossier p{font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.55}
+.dossier ul{margin:0 0 12px;padding:0 0 0 16px;color:var(--muted);font-size:.72rem;line-height:1.6}
+.dosrow{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.72rem;margin:8px 0;line-height:1.5;color:var(--muted)}
+.dosrow b{display:block;font-size:.6rem;letter-spacing:.18em;margin-bottom:3px}
+.dosrow.bad{border-color:#ff2e4d33;background:#ff2e4d08}
+.dosrow.good{border-color:#00ff8833;background:#00ff8808}
+/* APDU builder */
+.apduform .agrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+.fld label{display:block;font-size:.6rem;letter-spacing:.14em;color:var(--dim);margin:6px 0 3px;text-transform:uppercase}
+.fld input,.fld textarea,.fld select{
+  width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--text);
+  padding:8px 10px;border-radius:6px;font:inherit;font-size:.78rem;
+}
+.fld textarea{min-height:96px;resize:vertical}
+.fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--acid);outline:0}
+.apdu-hex{
+  font-size:.95rem;letter-spacing:.12em;color:var(--acid);word-break:break-all;
+  background:#04070a;border:1px dashed #00ff8833;border-radius:8px;padding:10px 12px;margin:8px 0;
+}
+.apdu-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+/* field kit widgets */
+.kit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.meter{height:10px;border:1px solid var(--line2);border-radius:5px;overflow:hidden;background:var(--bg2);margin:10px 0 6px}
+.meter i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--red) 0%,var(--amber) 45%,var(--acid) 100%);transition:width .4s}
+.bigscore{font-size:1.7rem;font-weight:800;line-height:1;color:var(--text)}
+.scoretag{font-size:.6rem;letter-spacing:.16em;padding:3px 8px;border-radius:4px;border:1px solid;display:inline-block;margin-top:8px}
+.chk{
+  display:flex;gap:10px;align-items:center;border:1px solid var(--line);
+  background:var(--panel2);padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:.73rem;color:var(--muted);margin:6px 0;transition:.15s;
+}
+.chk:hover{border-color:var(--acid)}
+.chk input{accent-color:var(--acid);width:15px;height:15px;flex:0 0 auto;cursor:pointer}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;font-size:.74rem;color:var(--muted);margin:6px 0}
+.kv b{color:var(--text)}
+.spstate{font-size:.66rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.spstate.ok{color:var(--acid)} .spstate.bad{color:var(--red)}
+/* interactive protocol checklists */
+.pi{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:4px 0;list-style:none}
+.pi .pb{
+  flex:0 0 auto;width:14px;height:14px;margin-top:4px;border:1px solid var(--line2);
+  border-radius:4px;position:relative;transition:.15s;
+}
+.pi.done .pb{border-color:var(--acid);background:#00ff8818}
+.pi.done .pb::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--acid);font-size:10px}
+.pi.done .pt{opacity:.45;text-decoration:line-through}
+.pi .pe{display:none;font-size:.68rem;color:var(--dim);line-height:1.5;border-left:2px solid var(--line2);padding:2px 0 2px 10px;margin:6px 0 4px}
+.pi.open .pe{display:block}
+ul.protolist{padding:0;margin:12px 0 0}
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+body.rm *{animation:none!important;transition:none!important}
 
 /* ============ NAV ============ */
 nav{
@@ -229,7 +346,7 @@ nav{
 .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.12em; font-size:.85rem}
 .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--acid);box-shadow:0 0 16px var(--acid); animation:pulse 2s infinite}
 .badge{font-size:.68rem; letter-spacing:.18em; color:var(--acid); border:1px solid #00ff8866; padding:4px 9px; border-radius:4px; background:#00ff8812}
-.nav-links{display:flex; gap:22px; font-size:.78rem; letter-spacing:.06em}
+.nav-links{display:flex; gap:20px; font-size:.78rem; letter-spacing:.06em}
 .nav-links a{color:var(--muted); text-decoration:none; text-transform:uppercase}
 .nav-links a:hover{color:var(--text)}
 .nav-links a b{color:var(--dim); font-weight:400; margin-right:4px}
@@ -267,6 +384,7 @@ h1 span.acid{color:var(--acid); text-shadow:0 0 18px #00ff8855}
 
 /* SECTIONS */
 section{padding:64px 0; border-top:1px solid #171d2a; position:relative}
+body.theme-light section{border-top:1px solid #d5dce7}
 h2{font-family:'Share Tech Mono',monospace; font-size:clamp(1.8rem,3.8vw,2.7rem); line-height:.95; letter-spacing:-.03em; margin:0 0 12px; text-transform:uppercase}
 h2 i{color:var(--acid); font-style:normal}
 .sub{color:var(--muted); max-width:72ch; margin:0 0 28px; font-size:.98rem}
@@ -344,6 +462,10 @@ footer strong{color:var(--muted)}
   .lab-grid{grid-template-columns:1fr}
   .radarwrap{grid-template-columns:1fr}
   .radar{max-width:230px; margin-inline:auto}
+  .chip-stage{grid-template-columns:1fr}
+  .kit-grid{grid-template-columns:1fr}
+  .apdu-cols{grid-template-columns:1fr}
+  .apduform .agrid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:700px){
   .hud{display:none}
@@ -352,6 +474,7 @@ footer strong{color:var(--muted)}
 </head>
 <body>
 
+<a class="skip" href="#anatomy">▚ SKIP TO INTEL</a>
 <div class="scanlines"></div>
 <canvas id="rain" aria-hidden="true"></canvas>
 
@@ -374,7 +497,14 @@ footer strong{color:var(--muted)}
       <a href="#pins"><b>02</b> PINS</a>
       <a href="#free"><b>03</b> FREE_PROTOCOLS</a>
       <a href="#lab"><b>04</b> LAB</a>
-      <a href="#manifesto"><b>05</b> MANIFESTO</a>
+      <a href="#fieldkit"><b>05</b> FIELD_KIT</a>
+      <a href="#manifesto"><b>06</b> MANIFESTO</a>
+      <a href="https://github.com/DLinacre/sim-root" target="_blank" rel="noopener"><b>07</b> SOURCE</a>
+    </div>
+    <div class="nav-icos" role="toolbar" aria-label="quick controls">
+      <button class="icobtn" id="btnSfx" title="Sound FX (m)" aria-pressed="false">SFX:OFF</button>
+      <button class="icobtn" id="btnKeys" title="Keyboard shortcuts (?)">⌨ ?</button>
+      <button class="icobtn" id="btnSettings" title="Settings">⚙ CFG</button>
     </div>
   </div>
   <div class="ticker" aria-hidden="true">
@@ -399,7 +529,7 @@ footer strong{color:var(--muted)}
   </div>
 </nav>
 
-<main class="wrap">
+<main class="wrap" id="top">
 
   <section class="hero" style="border:0">
     <div>
@@ -431,8 +561,68 @@ footer strong{color:var(--muted)}
     <h2>THE CHIP <i>IS NOT</i> THE PLASTIC</h2>
     <p class="sub">
       The image you gave us is the only thing the telco wants you to see: <em>harmless gold pads</em>. Truth is, under those 6 pads sits a full microcontroller with its own OS, crypto keys, and file system. The plastic carrier is just a handle. The computer is underneath.
-      <br><br>Break it down and you break free.
+      <br><br>Click any pad. Get its dossier. Break it down and you break free.
     </p>
+
+    <!-- interactive chip diagram + dossier : merged from LIN4CRE/simroot -->
+    <div class="chip-stage">
+      <div class="chipframe">
+        <div class="lab-head"><span>ISO 7816-2 CONTACT BLOCK — CLICK A PAD</span><span class="lab-live">● TOUCH INTERFACE</span></div>
+        <svg id="chipSvg" viewBox="0 0 400 190" role="group" aria-label="Interactive SIM card contact diagram" style="width:100%;display:block">
+          <rect x="8" y="8" width="384" height="174" rx="14" fill="var(--panel2)" stroke="var(--line2)" stroke-width="2"/>
+          <path d="M 370 8 L 392 30 L 392 8 Z" fill="var(--bg)" stroke="var(--line2)" stroke-width="2"/>
+          <rect x="140" y="86" width="120" height="18" rx="4" fill="#000" stroke="#00FF8844" stroke-width="1"/>
+          <text x="200" y="99" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--dim)" letter-spacing="2">SIM://DIE</text>
+          <g class="pad" data-pin="vcc" tabindex="0" role="button" aria-label="C1 VCC power pin">
+            <rect x="20" y="25" width="85" height="45" rx="6" fill="#00ff8812" stroke="#00FF88" stroke-width="1.5"/>
+            <text x="62" y="44" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#00FF88">C1</text>
+            <text x="62" y="62" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">VCC</text>
+          </g>
+          <g class="pad" data-pin="rst" tabindex="0" role="button" aria-label="C2 RST reset pin">
+            <rect x="115" y="25" width="85" height="45" rx="6" fill="#00f0ff12" stroke="#00F0FF" stroke-width="1.5"/>
+            <text x="157" y="44" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#00F0FF">C2</text>
+            <text x="157" y="62" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">RST</text>
+          </g>
+          <g class="pad" data-pin="clk" tabindex="0" role="button" aria-label="C3 CLK clock pin">
+            <rect x="210" y="25" width="85" height="45" rx="6" fill="#ffd60012" stroke="#FFD600" stroke-width="1.5"/>
+            <text x="252" y="44" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#FFD600">C3</text>
+            <text x="252" y="62" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">CLK</text>
+          </g>
+          <g class="pad" data-pin="usb" tabindex="0" role="button" aria-label="C4 USB D plus pin">
+            <rect x="305" y="25" width="75" height="50" rx="6" fill="#ff3df212" stroke="#FF3DF2" stroke-width="1.5"/>
+            <text x="342" y="46" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#FF3DF2">C4</text>
+            <text x="342" y="63" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--muted)">USB D+</text>
+          </g>
+          <g class="pad" data-pin="gnd" tabindex="0" role="button" aria-label="C5 GND ground pin">
+            <rect x="20" y="120" width="85" height="45" rx="6" fill="#ffffff0d" stroke="#94A3B8" stroke-width="1.5"/>
+            <text x="62" y="139" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#94A3B8">C5</text>
+            <text x="62" y="157" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">GND</text>
+          </g>
+          <g class="pad" data-pin="vpp" tabindex="0" role="button" aria-label="C6 VPP legacy programming pin">
+            <rect x="115" y="120" width="85" height="45" rx="6" fill="#ff2e4d12" stroke="#FF2E4D" stroke-width="1.5"/>
+            <text x="157" y="139" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#FF2E4D">C6</text>
+            <text x="157" y="157" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">VPP</text>
+          </g>
+          <g class="pad" data-pin="io" tabindex="0" role="button" aria-label="C7 IO data pin">
+            <rect x="210" y="120" width="85" height="45" rx="6" fill="#9b5cff12" stroke="#9b5cff" stroke-width="1.5"/>
+            <text x="252" y="139" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#9b5cff">C7</text>
+            <text x="252" y="157" text-anchor="middle" font-family="monospace" font-size="10" fill="var(--muted)">I/O</text>
+          </g>
+          <g class="pad" data-pin="usb" tabindex="0" role="button" aria-label="C8 USB D minus pin">
+            <rect x="305" y="115" width="75" height="50" rx="6" fill="#ff3df212" stroke="#FF3DF2" stroke-width="1.5"/>
+            <text x="342" y="136" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#FF3DF2">C8</text>
+            <text x="342" y="153" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--muted)">USB D-</text>
+          </g>
+        </svg>
+      </div>
+      <div class="dossier" aria-live="polite">
+        <div class="lab-head"><span id="dosTitle">DOSSIER — VCC // C1</span><span class="lab-live" id="dosVolt">1.8V / 3V / 5V</span></div>
+        <p id="dosDesc">Power pin. Feeds regulated operating voltage to the internal microcontroller.</p>
+        <ul id="dosTech"></ul>
+        <div class="dosrow bad"><b style="color:var(--red)">⚠ EXPLOIT VECTOR</b><span id="dosExploit"></span></div>
+        <div class="dosrow good"><b style="color:var(--acid)">✓ DEFENSE TACTIC</b><span id="dosDefense"></span></div>
+      </div>
+    </div>
 
     <div class="pins-layout" id="pins">
       <div class="pin-list">
@@ -497,22 +687,23 @@ footer strong{color:var(--muted)}
       <div class="highlight-box">
         <div class="bar"><i style="background:var(--red)"></i><i style="background:var(--amber)"></i><i style="background:var(--acid)"></i><span style="margin-left:auto; font-size:.65rem; letter-spacing:.15em; color:var(--dim)">SIM_TRACE.LOG</span></div>
         <div class="term" id="termLog">
-<span class="comment">// boot sequence captured via cheap reader ($8) - educational only</span><br>
-<span class="prompt">AT+CSIM=14,"A0A40000023F00"</span> <span class="comment"># SELECT MF</span><br>
-<b>&lt;&lt; 61 12 : READY</b><br><br>
-<span class="comment">// who are you? IMSI request</span><br>
-<span class="prompt">0x88 0x88 ... AUTH_REQ</span><br>
-<b>RAND:</b> 4F:C9:12:FA:88:01...<br>
-<b>SIM:</b> COMPUTE Ki + OPc =&gt; SRES, Kc<br>
-<span class="ok">[OK] RESPONSE 32 bytes</span><br><br>
-<span class="comment">// what they store:</span><br>
-- ICCID: 89 44... <span class="comment"># your physical card serial</span><br>
-- IMSI: MCC+MNC+MSIN <span class="comment"># your subscription identity - TRACKED</span><br>
-- Ki: <span class="warn">NEVER LEAVES CHIP</span> <span class="comment"># this is why cloning is hard</span><br>
-- SMS / ADN: ~250 contacts max<br>
-- LO: PLMN, forbidden networks<br><br>
+<span class="comment">// full APDU capture from own card via $8 reader — frame-by-frame, file IDs decoded</span><br>
+<span class="prompt">TX &gt;&gt; A0 A4 00 00 02 3F 00</span> <span class="comment"># SELECT MF (0x3F00)</span><br>
+<b>&lt;&lt; 61 12 : 18 response bytes pending</b><br>
+<span class="prompt">TX &gt;&gt; A0 C0 00 00 12</span> <span class="comment"># GET RESPONSE</span><br>
+<b>&lt;&lt; 00 00 00 00 3F 00 01 ... 90 00</b> <span class="ok">[OK]</span><br>
+<span class="prompt">TX &gt;&gt; A0 A4 00 00 02 7F 20</span> <span class="comment"># SELECT DF_GSM (0x7F20)</span><br>
+<b>&lt;&lt; 61 16 : DF_GSM directory selected</b><br>
+<span class="prompt">TX &gt;&gt; A0 A4 00 00 02 6F 07</span> <span class="comment"># SELECT EF_IMSI (0x6F07)</span><br>
+<b>&lt;&lt; 61 0F : IMSI file selected</b><br>
+<span class="prompt">TX &gt;&gt; A0 B0 00 00 09</span> <span class="comment"># READ BINARY — 9 bytes of IMSI</span><br>
+<b>&lt;&lt; 08 49 60 •• •• •• •• ••</b> <span class="ok">[OK]</span> <span class="comment"># MCC+MNC plaintext, MSIN masked — your own card only</span><br>
+<span class="prompt">TX &gt;&gt; A0 88 00 00 10 [RAND]</span> <span class="comment"># RUN GSM ALGORITHM</span><br>
+<b>&lt;&lt; SRES: 82A1C904 | Kc: 9F1012AB4801</b> <span class="ok">[90 00]</span> <span class="comment"># Ki never leaves the die</span><br>
+<span class="prompt">TX &gt;&gt; AT+CLCK="SC",1,"1234"</span> <span class="comment"># ENABLE CHV1 PIN LOCK</span><br>
+<b>&lt;&lt; OK — cold boot now demands the 4-digit code</b><br><br>
 <span class="comment">// free-living countermeasures:</span><br>
-<span class="ok">[1] PIN lock SIM (AT+CLCK="SC")</span><br>
+<span class="ok">[1] PIN lock SIM (CHV1), 3 attempts max</span><br>
 <span class="ok">[2] Disable 2G - blocks most IMSI catchers</span><br>
 <span class="ok">[3] Use prepaid data-only + VoIP</span><br>
 <span class="ok">[4] Physically remove when not needed</span><br>
@@ -522,7 +713,7 @@ footer strong{color:var(--muted)}
             <b style="color:var(--amber)">⚠ THREAT:</b><br><span style="color:var(--muted)">IMSI Catchers (Stingrays) force your SIM to attach via C1/C7 handshake. Catches IMSI even with data off.</span>
           </div>
           <div style="border:1px solid var(--line); padding:10px; border-radius:8px; font-size:.78rem">
-            <b style="color:var(--acid)">✓ DEFENSE:</b><br><span style="color:var(--muted)">Faraday sleeve ($5), 4G/5G-only mode, eSIM profiles that rotate weekly.</span>
+            <b style="color:var(--acid)">✓ DEFENSE:</b><br><span style="color:var(--muted)">Faraday sleeve (£5), 4G/5G-only mode, eSIM profiles that rotate weekly.</span>
           </div>
         </div>
       </div>
@@ -532,45 +723,45 @@ footer strong{color:var(--muted)}
   <section id="free">
     <div class="eyebrow">file_02 // free_living_protocols</div>
     <h2>OWN YOUR SIGNAL, <i>OWN YOUR LIFE</i></h2>
-    <p class="sub">A hacker doesn't use tech to steal free phone bills. That's petty and gets you caught. A hacker uses <em>understanding</em> to become un-leashable. Here are 3 protocols from the field.</p>
+    <p class="sub">A hacker doesn't use tech to steal free phone bills. That's petty and gets you caught. A hacker uses <em>understanding</em> to become un-leashable. Three field protocols — <b style="color:var(--text)">click a step to check it off, click again for the why</b>. Progress persists on this device.</p>
 
     <div class="grid">
       <article class="card">
         <div class="step-num">PROTOCOL 01 — BURNER IDENTITY</div>
         <h3>Disposable Self</h3>
-        <p>The SIM is you. So don't be you.</p>
-        <ul>
-          <li>Prepaid cash SIM, no ID (where legal) or eSIM with <a href="https://privacy.com" target="_blank" rel="noopener">privacy.com</a> VCC</li>
-          <li>Activate on public WiFi, never home IP</li>
-          <li>Rotate every 14-90 days. Destroy chip with hammer (VCC pad)</li>
-          <li>Never tie to banking / real ID</li>
+        <p>Decouple the subscriber from the database. The SIM is you — so don't be you.</p>
+        <ul class="protolist">
+          <li class="pi" data-pid="b1"><span class="pb"></span><span class="pt">Cash-bought prepaid SIM (or privacy VCC eSIM) — never a card tied to your name.<span class="pe">Zero credit-card or bank record linking physical person to ICCID. Where legal, buy over the counter with cash.</span></span></li>
+          <li class="pi" data-pid="b2"><span class="pb"></span><span class="pt">Activate on public WiFi or shielded hotspot — never your home IP.<span class="pe">Prevents your home ISP from geolocating you during the registration handshake.</span></span></li>
+          <li class="pi" data-pid="b3"><span class="pb"></span><span class="pt">Rotate every 14–90 days. Destroy the chip — snap across the C1 VCC pad.<span class="pe">Limits how long historical cell-tower location datasets stay useful against you.</span></span></li>
+          <li class="pi" data-pid="b4"><span class="pb"></span><span class="pt">Never link burner numbers to banking, 2FA, or personal accounts.<span class="pe">One cross-platform correlation immediately burns the whole identity.</span></span></li>
         </ul>
       </article>
       <article class="card">
         <div class="step-num">PROTOCOL 02 — OFF-GRID COMMS</div>
         <h3>Air-Gapped Mind</h3>
-        <p>Keep your baseband processor from snitching.</p>
-        <ul>
-          <li>De-googled phone + no SIM for daily driver (WiFi VoIP)</li>
-          <li>Second Faraday-boxed phone for sensitive calls</li>
-          <li>Signal / Session on WiFi, never SMS for 2FA</li>
-          <li>PIN the SIM + set SIM lock attempts to 3</li>
+        <p>Baseband isolation. Keep the radio firmware from silently reporting you.</p>
+        <ul class="protolist">
+          <li class="pi" data-pid="a1"><span class="pb"></span><span class="pt">De-Googled daily driver (GrapheneOS / CalyxOS) with NO SIM at all — WiFi VoIP only.<span class="pe">Eliminates passive cell-site timing-advance logging from your everyday movements.</span></span></li>
+          <li class="pi" data-pid="a2"><span class="pb"></span><span class="pt">Second phone, Faraday-bagged, strictly for unavoidable cellular voice/SMS.<span class="pe">RF physically blocked when not in active use. A bagged phone logs nothing.</span></span></li>
+          <li class="pi" data-pid="a3"><span class="pb"></span><span class="pt">Enable SIM PIN (CHV1), max 3 attempts.<span class="pe">A seized or lost phone can't mount the SIM identity without the code. PUK = carrier-only reset.</span></span></li>
+          <li class="pi" data-pid="a4"><span class="pb"></span><span class="pt">No SMS 2FA. FIDO2 hardware keys or TOTP apps for everything sensitive.<span class="pe">Kills SIM-swap fraud and baseband SMS interception in one move.</span></span></li>
         </ul>
       </article>
       <article class="card">
         <div class="step-num">PROTOCOL 03 — SIGNAL DISCIPLINE</div>
         <h3>Die Living Free</h3>
-        <p>The network logs when and where C7 answered. Minimize that.</p>
-        <ul>
-          <li>Airplane mode = default. You call tower, not the reverse</li>
-          <li>Power off before protest / border / sensitive meet</li>
-          <li>Never power on two SIMs (real + burner) together</li>
-          <li>Nano-SIM: 12.3×8.8×0.67mm — easy to hide, easy to destroy</li>
+        <p>The network logs when and where C7 answered. Minimize the footprint.</p>
+        <ul class="protolist">
+          <li class="pi" data-pid="s1"><span class="pb"></span><span class="pt">Force 4G/5G-only mode — disable the legacy 2G GSM radio entirely.<span class="pe">Stingray IMSI catchers rely on forced 2G fallback, which has no mutual tower authentication.</span></span></li>
+          <li class="pi" data-pid="s2"><span class="pb"></span><span class="pt">Airplane mode as your default state. You call the tower — not the reverse.<span class="pe">Stops passive multi-tower sector-handoff location pinging while you idle.</span></span></li>
+          <li class="pi" data-pid="s3"><span class="pb"></span><span class="pt">Power fully off before protests, borders, or sensitive meetings.<span class="pe">Denies ambient presence triangulation from tower logs after the fact.</span></span></li>
+          <li class="pi" data-pid="s4"><span class="pb"></span><span class="pt">VoIP over a VPN tunnel instead of circuit-switched cellular voice.<span class="pe">Moves voice behind end-to-end IP-layer encryption the baseband can't see into.</span></span></li>
         </ul>
       </article>
     </div>
 
-    <div style="margin-top:18px; display:grid; grid-template-columns:1.2fr .8fr; gap:16px">
+    <div style="margin-top:18px; display:grid; grid-template-columns:1.2fr .8fr; gap:16px" class="myth-grid">
       <div class="card" style="border-color:#FFD60033">
         <div class="step-num" style="color:var(--amber)">INTEL DROP — WHAT SIM DOESN'T STORE</div>
         <h3 style="color:var(--amber)">Corp Myth vs Reality</h3>
@@ -671,15 +862,119 @@ you are not alive. You are subscribed.<br><br>
         </div>
       </div>
 
+      <!-- MOD 05 : APDU BUILDER (merged from LIN4CRE/simroot) -->
+      <div class="lab-panel span2 apduform">
+        <div class="lab-head"><span>MOD_05 // ISO 7816 APDU BUILDER</span><span class="lab-live">● CRAFT FRAMES</span></div>
+        <p class="tiny">Forge a smart-card command frame byte by byte. <b style="color:var(--text)">Execute runs a simulation</b> — no reader attached, no chip touched. This is the exact grammar your phone speaks to the C7 pad.</p>
+        <div class="apdu-cols">
+          <div class="fld">
+            <div class="agrid">
+              <div><label for="apduCla">CLA — class byte</label><input id="apduCla" value="A0" maxlength="2" inputmode="text" aria-label="CLA class byte"></div>
+              <div>
+                <label for="apduIns">INS — instruction</label>
+                <select id="apduIns" aria-label="INS instruction byte">
+                  <option value="A4" selected>A4 · SELECT FILE</option>
+                  <option value="C0">C0 · GET RESPONSE</option>
+                  <option value="B0">B0 · READ BINARY</option>
+                  <option value="B2">B2 · READ RECORD</option>
+                  <option value="D6">D6 · UPDATE BINARY</option>
+                  <option value="DC">DC · UPDATE RECORD</option>
+                  <option value="20">20 · VERIFY CHV1</option>
+                  <option value="88">88 · RUN GSM ALGORITHM</option>
+                  <option value="84">84 · GET CHALLENGE</option>
+                  <option value="F2">F2 · STATUS</option>
+                  <option value="A2">A2 · SEEK</option>
+                </select>
+              </div>
+              <div><label for="apduP1">P1</label><input id="apduP1" value="00" maxlength="2" aria-label="Parameter 1"></div>
+              <div><label for="apduP2">P2</label><input id="apduP2" value="00" maxlength="2" aria-label="Parameter 2"></div>
+              <div><label for="apduLe">Le (opt.)</label><input id="apduLe" value="" maxlength="2" placeholder="—" aria-label="Expected length"></div>
+            </div>
+            <label for="apduData">DATA — hex bytes, spaces ok (Lc auto-computed)</label>
+            <input id="apduData" value="3F 00" spellcheck="false" autocomplete="off" aria-label="APDU data bytes">
+            <div class="apdu-hex" id="apduOut" aria-live="polite">A0 A4 00 00 02 3F 00</div>
+            <div class="btnrow" style="margin-bottom:0">
+              <button class="btn" id="btnApduRun">▶ EXECUTE (SIMULATED)</button>
+              <button class="btn btn-ghost" id="btnApduCopy">⧉ COPY HEX</button>
+            </div>
+          </div>
+          <div>
+            <div class="lab-head" style="margin-bottom:8px"><span>SESSION TRACE · C7 I/O LINE</span><span class="ok">SW words decoded</span></div>
+            <div class="term mini" id="apduLog" style="min-height:230px"><span class="c2">[idle] build a frame, hit execute. try SELECT 3F00 → GET RESPONSE → SELECT 6F07 → READ BINARY.</span></div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <p class="fineprint">RULES OF ENGAGEMENT: scanning or intercepting networks you don't own — or lack written permission to test — is a crime. In the UK that's the Computer Misuse Act 1990 and the Investigatory Powers Act 2016. Everything above is client-side simulation for learning. Hack your own gear. Get certs, not charges.</p>
   </section>
 
+  <!-- ================= FIELD KIT (merged widgets) ================= -->
+  <section id="fieldkit">
+    <div class="eyebrow">file_04 // field_kit</div>
+    <h2>THE <i>FIELD KIT</i></h2>
+    <p class="sub">Three instruments from the merged arsenal: measure your exposure, price your rotation, and keep notes that <em>decrypt only for you</em>. All math and crypto runs locally in this tab.</p>
+
+    <div class="kit-grid">
+
+      <!-- THREAT CALCULATOR -->
+      <div class="lab-panel">
+        <div class="lab-head"><span>KIT_01 // EXPOSURE CALCULATOR</span><span class="lab-live">● LIVE SCORE</span></div>
+        <p class="tiny">Tick what's true about your current setup. Score starts hardened at 100 — each tick is a leak.</p>
+        <label class="chk"><input type="checkbox" id="th1"> 2G / GSM fallback still enabled on device</label>
+        <label class="chk"><input type="checkbox" id="th2"> No Faraday sleeve or RF shielding habit</label>
+        <label class="chk"><input type="checkbox" id="th3"> SIM PIN (CHV1) not set</label>
+        <label class="chk"><input type="checkbox" id="th4"> SIM registered under legal ID (KYC contract)</label>
+        <label class="chk"><input type="checkbox" id="th5"> Identity rotation slower than 90 days / never</label>
+        <label class="chk"><input type="checkbox" id="th6"> Live location + always-on radios, no airplane discipline</label>
+        <div class="meter" aria-hidden="true"><i id="thFill"></i></div>
+        <div style="display:flex; align-items:baseline; gap:12px">
+          <span class="bigscore" id="thScore">100</span><span style="color:var(--dim); font-size:.7rem">/ 100 OPSEC SCORE</span>
+        </div>
+        <span class="scoretag ok" id="thLabel" style="border-color:#00ff8844;background:#00ff8810">LOW EXPOSURE — HARDENED</span>
+        <div class="tiny" id="thFix" style="margin-top:10px">nothing to fix. stay paranoid, stay free.</div>
+      </div>
+
+      <!-- BURNER BUDGET -->
+      <div class="lab-panel">
+        <div class="lab-head"><span>KIT_02 // ROTATION BUDGET</span><span class="lab-live">● £££</span></div>
+        <p class="tiny">Privacy has a price — and it's cheaper than the data they sell about you.</p>
+        <div class="fld">
+          <label for="budDays">ROTATION INTERVAL (DAYS)</label>
+          <input id="budDays" type="number" min="1" max="365" value="30">
+          <label for="budCost">PREPAID COST PER SIM (£ GBP)</label>
+          <input id="budCost" type="number" min="0" max="200" value="10">
+        </div>
+        <div class="kv"><span>SIMS BURNED / YEAR</span><b id="budPerYear">13</b></div>
+        <div class="kv"><span>ANNUAL PRIVACY BUDGET</span><b id="budYear" style="color:var(--acid)">£130</b></div>
+        <div class="kv"><span>MONTHLY EQUIVALENT</span><b id="budMonth">£10.83</b></div>
+        <p class="tiny" style="margin-top:10px">Rule of thumb: £10/mo buys you a fresh IMSI every month. The data broker pays £0 for your current one.</p>
+      </div>
+
+      <!-- ENCRYPTED SCRATCHPAD -->
+      <div class="lab-panel fld">
+        <div class="lab-head"><span>KIT_03 // FIELD NOTES · AES-GCM</span><span class="spstate ok" id="spState">● LOCAL ONLY</span></div>
+        <p class="tiny">Client-side encrypted notes: PBKDF2×100k → AES-256-GCM. Ciphertext lives in this browser's storage. The passphrase never does.</p>
+        <label for="spText">NOTE PLAINTEXT</label>
+        <textarea id="spText" placeholder="e.g. reader wiring: RST→D2, CLK→D3, I/O→D4 via 1k…" aria-label="note plaintext"></textarea>
+        <label for="spPass">PASSPHRASE</label>
+        <input id="spPass" type="password" placeholder="min. 8 chars — never stored" autocomplete="off">
+        <div class="btnrow">
+          <button class="btn" id="btnSpSave">⬇ ENCRYPT + SAVE</button>
+          <button class="btn btn-ghost" id="btnSpLoad">⬆ DECRYPT + LOAD</button>
+          <button class="btn btn-red" id="btnSpWipe">✕ WIPE</button>
+        </div>
+        <div class="spstate" id="spMsg">state: no ciphertext stored on this device.</div>
+      </div>
+
+    </div>
+  </section>
+
   <section id="manifesto">
     <div class="eyebrow">final_payload</div>
     <h2>THE MANIFESTO: <i>FREE LIVING</i> IS A SKILL</h2>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start" class="myth-grid">
       <div>
         <p class="sub" style="margin-bottom:16px">
           This diagram from <b style="color:var(--text)">@tipsfcworld</b> is normally boring ISP training material. Reframe it and it's a map of your leash.
@@ -707,23 +1002,186 @@ you are not alive. You are subscribed.<br><br>
 
 </main>
 
+<!-- SETTINGS MODAL -->
+<div class="veil" id="veilSettings" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="sheet">
+    <button class="vclose" data-close="veilSettings" aria-label="Close settings">✕</button>
+    <h3 id="setTitle">⚙ SYSTEM CONFIG</h3>
+    <p class="sub2">persisted to localStorage on this device only. nothing syncs — obviously.</p>
+    <div class="setrow"><span>THEME</span>
+      <span class="seg" role="radiogroup" aria-label="theme">
+        <button data-theme="cyber" id="thCyber">CYBER</button>
+        <button data-theme="oled" id="thOled">OLED</button>
+        <button data-theme="light" id="thLight">LIGHT</button>
+      </span>
+    </div>
+    <label class="setrow"><span>SOUND FX (WebAudio synth)</span><input type="checkbox" id="sSfx"></label>
+    <label class="setrow"><span>MATRIX RAIN BACKGROUND</span><input type="checkbox" id="sRain" checked></label>
+    <label class="setrow"><span>CRT SCANLINES</span><input type="checkbox" id="sScan" checked></label>
+    <label class="setrow"><span>BOOT SEQUENCE ON LOAD</span><input type="checkbox" id="sBoot" checked></label>
+    <label class="setrow"><span>REDUCE MOTION (kill animations)</span><input type="checkbox" id="sRm"></label>
+    <label class="setrow"><span>SHOW FIELD KIT SECTION</span><input type="checkbox" id="sKit" checked></label>
+  </div>
+</div>
+
+<!-- SHORTCUTS MODAL -->
+<div class="veil" id="veilKeys" role="dialog" aria-modal="true" aria-labelledby="keyTitle">
+  <div class="sheet">
+    <button class="vclose" data-close="veilKeys" aria-label="Close shortcuts">✕</button>
+    <h3 id="keyTitle">⌨ KEYBOARD OPS</h3>
+    <p class="sub2">work the whole grid without touching the mouse.</p>
+    <div class="krow"><kbd>?</kbd><span>this cheatsheet</span></div>
+    <div class="krow"><kbd>/</kbd><span>jack into sandbox shell</span></div>
+    <div class="krow"><kbd>1</kbd>–<kbd>6</kbd><span>jump: anatomy · pins · protocols · lab · field kit · manifesto</span></div>
+    <div class="krow"><kbd>d</kbd><span>go dark / wake RF sweep</span></div>
+    <div class="krow"><kbd>c</kbd><span>cloak signature</span></div>
+    <div class="krow"><kbd>t</kbd><span>cycle theme</span></div>
+    <div class="krow"><kbd>m</kbd><span>sound fx on/off</span></div>
+    <div class="krow"><kbd>b</kbd><span>replay boot sequence</span></div>
+    <div class="krow"><kbd>Esc</kbd><span>close overlays</span></div>
+  </div>
+</div>
+
 <footer>
   <div class="wrap" style="display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap">
-    <div><strong>SIM://ROOT v3.0</strong> — Hacked from a boring telecom slide into a field guide. Built for Bradford, UK node. Stay free.<br>
+    <div><strong>SIM://ROOT v3.1</strong> — Hacked from a boring telecom slide into a field guide. Now merged with the React prototype's arsenal. Built for Bradford, UK node. Stay free.<br>
     Use this knowledge to protect privacy, not to defraud networks. FCC / Ofcom rules still apply.</div>
-    <div style="text-align:right">SRC: image.png (user upload)<br>INSP: @tipsfcworld base diagram remixed<br>MODE: EDUCATIONAL // OFF-GRID<br>LAB: 100% CLIENT-SIDE SIMULATION</div>
+    <div style="text-align:right">SRC: image.png (user upload)<br>INSP: @tipsfcworld base diagram remixed<br>MERGED: LIN4CRE/simroot prototype intel<br>MODE: EDUCATIONAL // OFF-GRID<br>LAB: 100% CLIENT-SIDE SIMULATION<br>GIT: <a href="https://github.com/DLinacre/sim-root" target="_blank" rel="noopener">github.com/DLinacre/sim-root</a></div>
   </div>
 </footer>
 
 <script>
-/* ---------- original pin-row hover ---------- */
+/* ============ SFX ENGINE (ported from LIN4CRE/simroot utils/audio.ts) ============ */
+const SFX=(()=>{
+  let ctx=null, on=false;
+  function init(){
+    if(!ctx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) ctx=new AC(); }
+    if(ctx&&ctx.state==='suspended') ctx.resume().catch(()=>{});
+  }
+  function blip(type,f0,f1,t,vol){
+    if(!on) return;
+    init(); if(!ctx) return;
+    try{
+      const o=ctx.createOscillator(), g=ctx.createGain(), n=ctx.currentTime;
+      o.type=type;
+      o.frequency.setValueAtTime(f0,n);
+      o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),n+t);
+      g.gain.setValueAtTime(vol,n);
+      g.gain.exponentialRampToValueAtTime(0.001,n+t);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(n+t);
+    }catch(e){}
+  }
+  return {
+    set on(v){on=!!v},
+    get on(){return on},
+    click(){ blip('triangle',800,200,0.03,0.04); },
+    select(){ blip('sine',1200,600,0.045,0.05); },
+    success(){ blip('sine',523,784,0.22,0.06); },
+    alert(){ blip('sawtooth',300,200,0.16,0.05); },
+    ping(){ blip('sine',1500,900,0.05,0.015); }
+  };
+})();
+
+/* ============ SETTINGS (persisted) ============ */
+const DEF_SET={sfx:false,rain:true,scan:true,boot:true,rm:false,kit:true,theme:'cyber'};
+let SET={...DEF_SET};
+try{ const s=JSON.parse(localStorage.getItem('sr_settings')||'null'); if(s) SET={...DEF_SET,...s}; }catch(e){}
+function saveSet(){ try{ localStorage.setItem('sr_settings',JSON.stringify(SET)); }catch(e){} }
+function applySet(){
+  document.body.classList.toggle('rm',SET.rm);
+  document.body.classList.remove('theme-oled','theme-light');
+  if(SET.theme==='oled') document.body.classList.add('theme-oled');
+  if(SET.theme==='light') document.body.classList.add('theme-light');
+  const cv0=document.getElementById('rain'); if(cv0) cv0.style.display=SET.rain?'':'none';
+  const sl=document.querySelector('.scanlines'); if(sl) sl.style.display=SET.scan?'':'none';
+  const kit=document.getElementById('fieldkit'); if(kit) kit.style.display=SET.kit?'':'none';
+  SFX.on=SET.sfx;
+  const b=document.getElementById('btnSfx');
+  if(b){ b.textContent=SET.sfx?'SFX:ON':'SFX:OFF'; b.setAttribute('aria-pressed',String(SET.sfx)); }
+  ['sRain','sScan','sBoot','sRm','sKit','sSfx'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.checked=!!SET[{sRain:'rain',sScan:'scan',sBoot:'boot',sRm:'rm',sKit:'kit',sSfx:'sfx'}[id]];
+  });
+  const thMap={cyber:'thCyber',oled:'thOled',light:'thLight'};
+  Object.entries(thMap).forEach(([k,id])=>{ const e=document.getElementById(id); if(e) e.classList.toggle('on',SET.theme===k); });
+}
+
+/* settings UI */
+function hookSet(id,key){ const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{ SET[key]=e.checked; saveSet(); applySet(); SFX.select(); }); }
+['sRain','sScan','sBoot','sRm','sKit','sSfx'].forEach(id=>hookSet(id,{sRain:'rain',sScan:'scan',sBoot:'boot',sRm:'rm',sKit:'kit',sSfx:'sfx'}[id]));
+['cyber','oled','light'].forEach(t=>{ const e=document.getElementById('th'+t[0].toUpperCase()+t.slice(1)); if(e) e.addEventListener('click',()=>{ SET.theme=t; saveSet(); applySet(); SFX.select(); }); });
+function setSfx(v){ SET.sfx=v; saveSet(); applySet(); if(v){ SFX.select(); } }
+document.getElementById('btnSfx').addEventListener('click',()=>setSfx(!SET.sfx));
+
+/* ============ MODALS ============ */
+function veil(id,show){ const v=document.getElementById(id); if(v) v.classList.toggle('on',show); if(show) SFX.select(); }
+document.getElementById('btnSettings').addEventListener('click',()=>veil('veilSettings',true));
+document.getElementById('btnKeys').addEventListener('click',()=>veil('veilKeys',true));
+document.querySelectorAll('.vclose').forEach(b=>b.addEventListener('click',()=>veil(b.dataset.close,false)));
+document.querySelectorAll('.veil').forEach(v=>v.addEventListener('click',e=>{ if(e.target===v) v.classList.remove('on'); }));
+
+/* ============ PIN DOSSIERS (data ported from LIN4CRE/simroot utils/data.ts) ============ */
+const PIN_DATA={
+  vcc:{title:"DOSSIER — VCC // C1",volt:"1.8V / 3V / 5V DC",
+    desc:"Feeds regulated operating voltage to the internal microcontroller. Class C (1.8V), Class B (3V), Class A (5V) per ISO 7816-3. Cut or switch this line and the SIM dies instantly — no power, no handshake.",
+    tech:["Peak draw during authentication algorithm: under 10 mA","Supports hardware kill-switches and physical power interrupts","First pad a tower effectively 'wakes' — power precedes identity"],
+    exploit:"Power-analysis side-channel attacks (SPA/DPA) sample C1 during Ki computations and statistically recover key material from the current signature.",
+    defense:"A physical hardware kill-switch on C1 beats any software airplane mode. No voltage, no registration, no tracking."},
+  rst:{title:"DOSSIER — RESET // C2",volt:"0V→VCC, active pulse",
+    desc:"Forces cold/warm reboot of the SIM card operating system (COS) and triggers the Answer To Reset (ATR) burst out over C7. Your phone's baseband yanks this at every boot.",
+    tech:["Cold reset: full power-cycle re-init of the COS","Warm reset: re-init RAM while VCC stays up","First bytes of ATR declare protocol (T=0/T=1) and baud factors"],
+    exploit:"Glitching RST during early boot has historically skipped PIN-verification states or dropped chips into vendor diagnostic modes.",
+    defense:"Updated basebands reject unauthenticated warm resets mid-session; don't use decade-old handset firmware."},
+  clk:{title:"DOSSIER — CLOCK // C3",volt:"1–5 MHz (up to 20 MHz UICC)",
+    desc:"External timing source from the host. Every bit on C7 is framed against this heartbeat; baud rate derives from the F/D ratio (default F=372, D=1).",
+    tech:["Paces MILENAGE / COMP128 authentication rounds","Clock-stop mode: chip sleeps microamp-low between frames","Jitter here = failed auth, every time"],
+    exploit:"Clock-glitch fault injection — under/over-clocking mid-instruction — can make the ALU skip a compare and leak authentication bypasses.",
+    defense:"Faraday sleeve + clock suspension in transit: no edges, no execution, no radio."},
+  gnd:{title:"DOSSIER — GND // C5",volt:"0.0V system common",
+    desc:"The reference everything is measured against. Lose clean ground and every other pad's signal turns to noise — in circuits and in threat models alike.",
+    tech:["Low-impedance return path prevents ground bounce","ESD dissipation sink for the contact block","Metaphor holds: define your baseline before you move"],
+    exploit:"Floating-ground injection offsets the I/O reading threshold and corrupts frames into fault states.",
+    defense:"Mechanical socket integrity — bent contacts and pocket fluff are the #1 real-world 'attack'."},
+  vpp:{title:"DOSSIER — VPP // C6",volt:"NC · legacy 12.5–21V",
+    desc:"Programming voltage for 1st/2nd-gen smartcards that needed high voltage to burn EEPROM. Modern UICCs generate their own internally and leave C6 Not Connected.",
+    tech:["Reserved in ISO 7816-3; unassigned on 3GPP UICC silicon","Kept for mechanical backward compatibility","Occasionally repurposed in custom hardware as a trigger line"],
+    exploit:"Decades ago, forcing high voltage here let flasher boxes overwrite security fuses on early GSM SIMs. Ancient history — documented history.",
+    defense:"Any modern operator SIM simply ignores this pad. Attack surface: zero."},
+  io:{title:"DOSSIER — I/O // C7",volt:"half-duplex serial · T=0/T=1",
+    desc:"The single wire where everything that matters transits: ATR, file selects, IMSI reads, RAND challenges, SRES responses, SMS, OTA provisioning. Half-duplex, ~100 kbps.",
+    tech:["EF_IMSI = 0x6F07, EF_ICCID = 0x2FE2, EF_LOCI = location files","SELECT → GET RESPONSE → READ BINARY is the universal rhythm","All higher protocols (USIM auth, eUICC) tunnel through here"],
+    exploit:"A passive interposer or logic analyzer clipped on C7 inside your own handset watches IMSI and RAND in cleartext before radio encryption exists.",
+    defense:"CHV1 PIN lock gates file access after reset; 2G-off keeps the juicy transactions authenticated end-to-end."},
+  usb:{title:"DOSSIER — USB D+/D- // C4·C8",volt:"USB 2.0 FS · 12 Mbps",
+    desc:"The optional Inter-Chip USB pair (ETSI TS 102 600): a differential high-speed lane that replaces the ancient serial crawl — ~120× faster than C7. Modern eUICC/eSIM chips use it for rapid profile swaps.",
+    tech:["Differential pair, 90Ω ±15% — EMI-immune by design","Enables OTA profile downloads straight to the secure element","CCID class = plug straight into PC smartcard readers"],
+    exploit:"If carrier LPA certificates were ever compromised, IC-USB's speed makes remote profile injection frighteningly practical. Trust chain watch item.",
+    defense:"Only install eSIM profiles from verified QR / official carrier LPAs; audit profile lists after any 'carrier update'."}
+};
+
+function setPin(id){
+  const d=PIN_DATA[id]; if(!d) return;
+  document.querySelectorAll('.pin-row').forEach(r=>r.classList.toggle('active',r.dataset.pin===id));
+  document.querySelectorAll('.pad').forEach(p=>p.classList.toggle('on',p.dataset.pin===id));
+  document.getElementById('dosTitle').textContent=d.title;
+  document.getElementById('dosVolt').textContent=d.volt;
+  document.getElementById('dosDesc').textContent=d.desc;
+  document.getElementById('dosTech').innerHTML=d.tech.map(t=>'<li>'+t+'</li>').join('');
+  document.getElementById('dosExploit').textContent=d.exploit;
+  document.getElementById('dosDefense').textContent=d.defense;
+}
+document.querySelectorAll('.pad').forEach(p=>{
+  p.addEventListener('click',()=>{ setPin(p.dataset.pin); SFX.select(); });
+  p.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setPin(p.dataset.pin); SFX.select(); }});
+  p.addEventListener('mouseenter',()=>setPin(p.dataset.pin));
+});
+
+/* ---------- original pin-row hover (now synced with dossier) ---------- */
 const rows = document.querySelectorAll('.pin-row');
 rows.forEach(r=>{
-  r.addEventListener('mouseenter',()=>{
-    rows.forEach(x=>x.classList.remove('active'));
-    r.classList.add('active');
-  })
+  r.addEventListener('mouseenter',()=>{ setPin(r.dataset.pin); });
 });
+setPin('vcc');
 
 /* ---------- original typewriter ---------- */
 const lines = ["> analyzing contacts: VCC... GND... I/O... [OK]","> IMSI catcher scan: 0 found. You are clean.","> PIN protection: ENABLE IT. PUK = carrier only.","> Reminder: Free living > free service."];
@@ -736,8 +1194,8 @@ setInterval(()=>{
 },90);
 
 /* ================= INFILTRATION ADD-ONS (JS) ================= */
+applySet();
 
-/* shared terminal line helper */
 function tline(box,html,cls){
   const d=document.createElement('div');
   if(cls) d.className=cls;
@@ -751,9 +1209,10 @@ const boot=document.getElementById('boot'),
       bootLog=document.getElementById('bootLog'),
       bootFill=document.getElementById('bootFill');
 const bootLines=[
-  "SIM://ROOT BOOTLOADER v3.0",
+  "SIM://ROOT BOOTLOADER v3.1",
   "> mounting /dev/freedom ............. [OK]",
   "> injecting consciousness ........... [OK]",
+  "> merging LIN4CRE arsenal ........... [OK]",
   "> spoofing telemetry ................ [SIMULATED]",
   "> sweeping for IMSI catchers ........ 0 FOUND",
   "> decrypting manifesto .............. [OK]",
@@ -771,7 +1230,7 @@ function finishBoot(){
 if(boot){
   let skip=false;
   try{ skip = !!sessionStorage.getItem('sr_boot'); }catch(e){}
-  if(skip){ bootDone=true; boot.remove(); }
+  if(!SET.boot || skip){ bootDone=true; boot.remove(); }
   else{
     boot.addEventListener('click', finishBoot);
     (function bootTick(){
@@ -779,6 +1238,7 @@ if(boot){
       if(bi<bootLines.length){
         bootLog.textContent += bootLines[bi]+"\n";
         bootFill.style.width = Math.round(((bi+1)/bootLines.length)*100)+"%";
+        SFX.click();
         bi++;
         setTimeout(bootTick, bi===1?500:230);
       } else setTimeout(finishBoot, 700);
@@ -801,7 +1261,7 @@ if(cv){
   rainInit();
   addEventListener('resize',rainInit);
   setInterval(()=>{
-    if(document.hidden) return;
+    if(document.hidden||!SET.rain) return;
     cx.fillStyle="rgba(7,8,12,0.12)";
     cx.fillRect(0,0,W,H);
     cx.font="14px monospace";
@@ -819,6 +1279,11 @@ const hudL=document.getElementById('hudL'),
       hudClock=document.getElementById('hudClock'),
       hudRf=document.getElementById('hudRf');
 let cloaked=false;
+function toggleCloak(){
+  cloaked=document.body.classList.toggle('stealth');
+  if(hudL&&cloaked) hudL.textContent="GRID REF :: — MASKED —";
+  return cloaked;
+}
 addEventListener('mousemove',e=>{
   if(!hudL) return;
   if(cloaked){ hudL.textContent="GRID REF :: — MASKED —"; return; }
@@ -884,19 +1349,20 @@ function runHs(catcher){
   const bN=document.getElementById('btnNormal'), bC=document.getElementById('btnCatcher');
   bN.disabled=true; bC.disabled=true;
   hsReset();
+  SFX.select();
   const steps = catcher ? [
-    [0,    ()=>{ tline(hsLog,"[!] ROGUE BTS broadcasting @ -58dBm — louder than any real tower","bad"); pulseNode(N.rogue,true,1400); }],
+    [0,    ()=>{ tline(hsLog,"[!] ROGUE BTS broadcasting @ -58dBm — louder than any real tower","bad"); pulseNode(N.rogue,true,1400); SFX.alert(); }],
     [950,  ()=>{ tline(hsLog,"[!] DEVICE camps on rogue cell — forced <b>2G downgrade</b>","warn"); pulseNode(N.dev); }],
     [1900, ()=>{ tline(hsLog,"[!] ROGUE → DEVICE: <b>IDENTITY REQUEST</b> (2G needs no mutual auth)","bad"); pulseNode(N.rogue,true,1200); }],
-    [2850, ()=>{ tline(hsLog,"[!!] <b>IMSI EXPOSED:</b> 234-15-••••••••• — identity harvested, logged, sold?","bad"); pulseNode(N.rogue,true,1400); pulseNode(N.dev,false,700); }],
+    [2850, ()=>{ tline(hsLog,"[!!] <b>IMSI EXPOSED:</b> 234-15-••••••••• — identity harvested, logged, sold?","bad"); pulseNode(N.rogue,true,1400); pulseNode(N.dev,false,700); SFX.alert(); }],
     [3800, ()=>{ tline(hsLog,"[*] Rogue relays to REAL TOWER — silent man-in-the-middle position","warn"); pulseNode(N.tower); }],
-    [4750, ()=>{ tline(hsLog,"[DEFENSE] Radio settings → <b>4G/5G only, 2G OFF</b>. Fake towers starve to death.","ok"); pulseNode(N.hlr); }]
+    [4750, ()=>{ tline(hsLog,"[DEFENSE] Radio settings → <b>4G/5G only, 2G OFF</b>. Fake towers starve to death.","ok"); pulseNode(N.hlr); SFX.success(); }]
   ] : [
     [0,    ()=>{ tline(hsLog,"[*] DEVICE → TOWER: attach request (TMSI, not IMSI)","c2"); pulseNode(N.dev); }],
     [950,  ()=>{ tline(hsLog,"[*] TOWER → DEVICE: <b>RAND</b> 128-bit challenge","c2"); pulseNode(N.tower); }],
     [1900, ()=>{ tline(hsLog,"[*] SIM computes A3/A8 → SRES + Kc — <b>Ki never leaves the chip</b>"); pulseNode(N.dev); }],
     [2850, ()=>{ tline(hsLog,"[*] HLR/AuC verifies SRES against its own computation","c2"); pulseNode(N.hlr); }],
-    [3800, ()=>{ tline(hsLog,"[OK] <b>MUTUAL AUTH PASSED</b> — ciphered session live (Kc). Nobody else spoke.","ok"); pulseNode(N.tower,false,1200); }]
+    [3800, ()=>{ tline(hsLog,"[OK] <b>MUTUAL AUTH PASSED</b> — ciphered session live (Kc). Nobody else spoke.","ok"); pulseNode(N.tower,false,1200); SFX.success(); }]
   ];
   steps.forEach(s=>setTimeout(s[1], s[0]));
   const last=steps[steps.length-1][0];
@@ -908,11 +1374,12 @@ document.getElementById('btnCatcher').addEventListener('click',()=>runHs(true));
 /* ---------- MOD_02 : PORT SCANNER ---------- */
 const scanLog=document.getElementById('scanLog'), pfill=document.getElementById('pfill');
 let scanning=false;
-document.getElementById('btnScan').addEventListener('click',()=>{
+function runScan(){
   if(scanning) return;
   scanning=true;
   scanLog.innerHTML="";
   pfill.style.width="0%";
+  SFX.select();
   const rows=[
     ["[~] sweep 127.0.0.1 :: top ports :: <b>SIMULATED — zero packets sent</b>","c2",8],
     ["PORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SERVICE","",20],
@@ -928,10 +1395,11 @@ document.getElementById('btnScan').addEventListener('click',()=>{
     setTimeout(()=>{
       tline(scanLog,r[0],r[1]);
       pfill.style.width=r[2]+"%";
-      if(i===rows.length-1) scanning=false;
+      if(i===rows.length-1){ scanning=false; SFX.success(); }
     }, 450+i*520);
   });
-});
+}
+document.getElementById('btnScan').addEventListener('click',runScan);
 
 /* ---------- MOD_02b : LIVE HEX MEMORY ---------- */
 const hexEl=document.getElementById('hexDump');
@@ -959,6 +1427,7 @@ document.getElementById('btnHex').addEventListener('click',e=>{
   hexOn=!hexOn;
   e.target.textContent = hexOn ? "LIVE MEM ⏸" : "LIVE MEM ▶";
   if(hexOn) hexTick();
+  SFX.click();
 });
 
 /* ---------- MOD_03 : RF SWEEP ---------- */
@@ -967,7 +1436,7 @@ const blipsG=document.getElementById('blips'),
       rfState=document.getElementById('rfState'),
       radarBox=document.getElementById('radarBox');
 const MNC=["234-15","234-10","234-20","234-30"];
-let dark=false;
+let dark=false, blipFlip=false;
 setInterval(()=>{
   if(dark||document.hidden) return;
   const a=Math.random()*2*Math.PI, r=28+Math.random()*108;
@@ -981,38 +1450,108 @@ setInterval(()=>{
   ring.setAttribute("class","blip2");
   blipsG.appendChild(dot); blipsG.appendChild(ring);
   setTimeout(()=>{ dot.remove(); ring.remove(); },3300);
+  blipFlip=!blipFlip; if(blipFlip) SFX.ping();
   tline(rfLog,"TOWER "+MNC[Math.random()*4|0]+" :: -"+(62+(Math.random()*38|0))+" dBm :: "+(Math.random()>0.6?"5G NSA":"4G LTE"));
   while(rfLog.children.length>42) rfLog.firstChild.remove();
 },1500);
-document.getElementById('btnDark').addEventListener('click',e=>{
+function toggleDark(){
   dark=!dark;
   radarBox.classList.toggle('dark',dark);
   rfState.textContent = dark ? "○ DARK" : "● SWEEPING";
-  e.target.textContent = dark ? "⏻ WAKE RADIOS" : "⏻ GO DARK (AIRPLANE MODE)";
+  const btn=document.getElementById('btnDark');
+  btn.textContent = dark ? "⏻ WAKE RADIOS" : "⏻ GO DARK (AIRPLANE MODE)";
   if(hudRf) hudRf.textContent = dark ? "SILENT" : "SWEEPING";
   if(dark){
     blipsG.innerHTML="";
     tline(rfLog,"<b>RF SILENT.</b> Radios off, baseband asleep. You are a ghost.","ok");
+    SFX.success();
   } else {
     tline(rfLog,"[*] radios up — rescanning the 234 grid…","c2");
+    SFX.select();
+  }
+}
+document.getElementById('btnDark').addEventListener('click',toggleDark);
+
+/* ---------- MOD_05 : APDU BUILDER (merged + upgraded) ---------- */
+const aCla=document.getElementById('apduCla'), aIns=document.getElementById('apduIns'),
+      aP1=document.getElementById('apduP1'), aP2=document.getElementById('apduP2'),
+      aLe=document.getElementById('apduLe'), aData=document.getElementById('apduData'),
+      aOut=document.getElementById('apduOut'), aLog=document.getElementById('apduLog');
+const cleanHex=s=>(s.toUpperCase().replace(/[^0-9A-F]/g,''));
+const pair=s=>(cleanHex(s)+'0').slice(0,2);
+const HC="0123456789ABCDEF";
+const rhex=n=>{let o='';for(let i=0;i<n;i++)o+=HC[Math.random()*16|0];return o;};
+const spaced=h=>h.replace(/(..)/g,'$1 ').trim();
+function buildApdu(){
+  const cla=pair(aCla.value), ins=pair(aIns.value), p1=pair(aP1.value), p2=pair(aP2.value);
+  const data=cleanHex(aData.value);
+  const le=cleanHex(aLe.value);
+  let frame;
+  if(data.length){ const lc=data.length/2; frame=cla+ins+p1+p2+lc.toString(16).padStart(2,'0').toUpperCase()+data; }
+  else if(le.length){ frame=cla+ins+p1+p2+pair(le); }
+  else { frame=cla+ins+p1+p2; }
+  return {hex:frame, text:spaced(frame), hasData:!!data.length};
+}
+function refreshApdu(){ aOut.textContent=buildApdu().text; }
+[aCla,aIns,aP1,aP2,aLe,aData].forEach(e=>{ e.addEventListener('input',refreshApdu); e.addEventListener('change',refreshApdu); });
+const INS_SIM={
+  'A4':()=>({sw:'61 12', cls:'c2', note:'file selected — 18 response bytes pending'}),
+  'C0':()=>({sw:spaced('00000000'+'3F00'+'0100'+'00000000')+' 90 00', cls:'ok', note:'GET RESPONSE — file descriptor returned'}),
+  'B0':()=>({sw:'08 49 60 '+spaced(rhex(6))+' ·· 90 00', cls:'ok', note:'READ BINARY — raw EF bytes (masked; own-card drills only)'}),
+  'B2':()=>({sw:spaced(rhex(28))+' 90 00', cls:'', note:'READ RECORD — linear fixed record returned'}),
+  'D6':()=>({sw:'90 00', cls:'warn', note:'UPDATE BINARY — write simulated. no chip was harmed.'}),
+  'DC':()=>({sw:'90 00', cls:'warn', note:'UPDATE RECORD — write simulated. no chip was harmed.'}),
+  '20':(f)=>(f.hasData?{sw:'90 00', cls:'ok', note:'VERIFY CHV1 — PIN accepted, file gates open'}:{sw:'63 C2', cls:'bad', note:'VERIFY CHV1 — no PIN data supplied, 2 tries remain before PUK'}),
+  '88':()=>({sw:'SRES '+spaced(rhex(8))+' | Kc '+spaced(rhex(16))+' 90 00', cls:'ok', note:'RUN GSM ALGORITHM — Ki stayed on the die, as designed'}),
+  '84':()=>({sw:spaced(rhex(16))+' 90 00', cls:'', note:'GET CHALLENGE — fresh 8-byte random'}),
+  'F2':()=>({sw:'00 00 00 00 3F 00 '+spaced(rhex(8))+' 90 00', cls:'', note:'STATUS — current DF context returned'}),
+  'A2':()=>({sw:'90 00', cls:'', note:'SEEK — pattern found in current record (simulated)'})
+};
+document.getElementById('btnApduRun').addEventListener('click',()=>{
+  const f=buildApdu();
+  tline(aLog,'<span style="color:var(--cyan)">TX &gt;&gt;</span> <b>'+f.text+'</b>');
+  const fn=INS_SIM[pair(aIns.value)];
+  SFX.click();
+  setTimeout(()=>{
+    if(fn){
+      const r=fn(f);
+      tline(aLog,'&lt;&lt; '+r.sw+' — '+r.note, r.cls||'');
+    }else{
+      tline(aLog,'&lt;&lt; 6D 00 — INS not supported (unknown instruction byte)','bad');
+    }
+    SFX.success();
+  },350);
+});
+document.getElementById('btnApduCopy').addEventListener('click',e=>{
+  const t=buildApdu().text;
+  const done=()=>{ e.target.textContent='✓ COPIED'; setTimeout(()=>e.target.textContent='⧉ COPY HEX',1200); SFX.success(); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done).catch(done); }
+  else{
+    const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(err){}
+    ta.remove(); done();
   }
 });
+refreshApdu();
 
 /* ---------- MOD_04 : SANDBOX SHELL ---------- */
 const shellOut=document.getElementById('shellOut'), shellIn=document.getElementById('shellIn');
 function sout(h,c){ tline(shellOut,h,c); while(shellOut.children.length>120) shellOut.firstChild.remove(); }
-sout("SIM://ROOT guest shell — fully sandboxed. type <b>help</b>.","c2");
+sout("SIM://ROOT guest shell v3.1 — merged arsenal online. type <b>help</b>.","c2");
 const CMDS={
   help(){
     sout("available commands:","c2");
     sout("&nbsp;&nbsp;help&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— this menu");
     sout("&nbsp;&nbsp;whoami&nbsp;&nbsp;&nbsp;&nbsp;— identity check");
     sout("&nbsp;&nbsp;scan&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— run the loopback port scan (MOD_02)");
+    sout("&nbsp;&nbsp;apdu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— hint: MOD_05 builds frames for you");
     sout("&nbsp;&nbsp;imsi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— what your IMSI leaks");
     sout("&nbsp;&nbsp;trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— attempt a trace on… yourself");
     sout("&nbsp;&nbsp;cloak&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— minimize your signature");
     sout("&nbsp;&nbsp;decrypt&nbsp;&nbsp;&nbsp;— decrypt the void");
+    sout("&nbsp;&nbsp;score&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— read your KIT_01 exposure score");
     sout("&nbsp;&nbsp;manifesto&nbsp;— print the creed");
+    sout("&nbsp;&nbsp;theme&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— cycle cyber/oled/light");
     sout("&nbsp;&nbsp;clear&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— wipe the scrollback");
     sout("&nbsp;&nbsp;exit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— leave (you can't)");
   },
@@ -1020,10 +1559,8 @@ const CMDS={
     sout("guest — uid 1337 (sandbox).","ok");
     sout("real answer: whoever your IMSI says you are. rotate it.","warn");
   },
-  scan(){
-    sout("[~] tasking MOD_02 scanner…","c2");
-    document.getElementById('btnScan').click();
-  },
+  scan(){ sout("[~] tasking MOD_02 scanner…","c2"); runScan(); },
+  apdu(){ sout("[i] MOD_05 above is your forge. try: 20 VERIFY with an 8-byte PIN.","c2"); },
   imsi(){
     sout("IMSI = MCC(<b>234</b> = UK) + MNC + MSIN.","c2");
     sout("broadcast on legacy 2G attach unless a TMSI is assigned.");
@@ -1037,19 +1574,20 @@ const CMDS={
     setTimeout(()=>sout("[FAIL] <b>TRACE INCOMPLETE</b> — target went dark. good opsec.","ok"),(marks.length+1)*700);
   },
   cloak(){
-    cloaked=document.body.classList.toggle('stealth');
-    if(hudL&&cloaked) hudL.textContent="GRID REF :: — MASKED —";
-    sout(cloaked?"[OK] optical + RF signature minimized. you were never here.":"[*] signature restored. bold choice.","ok");
+    const on=toggleCloak();
+    sout(on?"[OK] optical + RF signature minimized. you were never here.":"[*] signature restored. bold choice.","ok");
   },
   decrypt(){
     sout("[~] brute-forcing the void…","c2");
     setTimeout(()=>sout("[OK] done. nothing was encrypted. it's called plaintext, guest.","ok"),900);
   },
+  score(){ sout("[i] KIT_01 exposure score: <b>"+thScore.textContent+"</b>/100 — "+thLabel.textContent, parseInt(thScore.textContent)>=80?"ok":(parseInt(thScore.textContent)>=50?"warn":"bad")); },
   manifesto(){
     sout("The goal is not to get free service.","c2");
     sout("The goal is to make service <b>optional</b>.","ok");
     sout("If you need the network to live, you are not alive. You are subscribed.");
   },
+  theme(){ cycleTheme(); sout("[OK] theme → "+SET.theme,"ok"); },
   sudo(){ sout("guest is not in the sudoers file. this incident will be reported to /dev/null.","bad"); },
   rm(){ sout("permission denied (and frankly rude).","warn"); },
   clear(){ shellOut.innerHTML=""; },
@@ -1059,6 +1597,7 @@ const CMDS={
   "42"(){ sout("right answer, wrong shell.","ok"); }
 };
 shellIn.addEventListener('keydown',e=>{
+  SFX.click();
   if(e.key!=='Enter') return;
   const raw=shellIn.value.trim();
   shellIn.value="";
@@ -1069,13 +1608,178 @@ shellIn.addEventListener('keydown',e=>{
   else sout("cmd not found: "+cmd.replace(/</g,"&lt;")+" — type <b>help</b>","bad");
 });
 
+/* ---------- KIT_01 : THREAT CALCULATOR (logic ported from ThreatCalculatorWidget) ---------- */
+const thIds=['th1','th2','th3','th4','th5','th6'];
+const thW={th1:25,th2:15,th3:20,th4:20,th5:10,th6:10};
+const thFixMap={
+  th1:"force 4G/5G-only mode — kill 2G fallback",
+  th2:"get a Faraday sleeve, use it in transit",
+  th3:"set SIM PIN (CHV1), 3 attempts",
+  th4:"move to cash prepaid / unlinked eSIM",
+  th5:"set a 14–90 day rotation schedule",
+  th6:"airplane mode default, location off until needed"
+};
+const thScore=document.getElementById('thScore'), thFill=document.getElementById('thFill'),
+      thLabel=document.getElementById('thLabel'), thFix=document.getElementById('thFix');
+function thCalc(){
+  let score=100; const fixes=[];
+  thIds.forEach(id=>{
+    if(document.getElementById(id).checked){ score-=thW[id]; fixes.push(thFixMap[id]); }
+  });
+  score=Math.max(0,Math.min(100,score));
+  thScore.textContent=score;
+  thFill.style.width=score+"%";
+  let tag,cls;
+  if(score>=80){ tag="LOW EXPOSURE — HARDENED"; cls="ok"; }
+  else if(score>=50){ tag="MODERATE EXPOSURE"; cls="warn"; }
+  else { tag="CRITICAL STINGRAY EXPOSURE"; cls="bad"; }
+  thLabel.textContent=tag;
+  thLabel.className="scoretag "+cls;
+  thLabel.style.borderColor=cls==='ok'?'#00ff8844':(cls==='warn'?'#ffd60044':'#ff2e4d44');
+  thLabel.style.background=cls==='ok'?'#00ff8810':(cls==='warn'?'#ffd60010':'#ff2e4d10');
+  thLabel.style.color=cls==='ok'?'var(--acid)':(cls==='warn'?'var(--amber)':'var(--red)');
+  thFix.innerHTML = fixes.length
+    ? "TOP FIXES → "+fixes.map(f=>"▪ "+f).join('<br>')
+    : "nothing to fix. stay paranoid, stay free.";
+}
+thIds.forEach(id=>document.getElementById(id).addEventListener('change',()=>{ thCalc(); SFX.click(); }));
+thCalc();
+
+/* ---------- KIT_02 : BURNER BUDGET ---------- */
+const budDays=document.getElementById('budDays'), budCost=document.getElementById('budCost');
+function budCalc(){
+  const days=Math.max(1,parseInt(budDays.value)||1);
+  const cost=Math.max(0,parseFloat(budCost.value)||0);
+  const perYear=Math.ceil(365/days);
+  const annual=perYear*cost;
+  document.getElementById('budPerYear').textContent=perYear+" SIMs";
+  document.getElementById('budYear').textContent="£"+annual.toLocaleString('en-GB');
+  document.getElementById('budMonth').textContent="£"+(annual/12).toFixed(2);
+}
+[budDays,budCost].forEach(e=>e.addEventListener('input',budCalc));
+budCalc();
+
+/* ---------- KIT_03 : ENCRYPTED FIELD NOTES (ported from utils/crypto.ts, salted upgrade) ---------- */
+const spState=document.getElementById('spState'), spMsg=document.getElementById('spMsg');
+async function deriveKey(pass,salt){
+  const enc=new TextEncoder();
+  const km=await crypto.subtle.importKey('raw',enc.encode(pass),{name:'PBKDF2'},false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+const b64=buf=>{let s='';const b=new Uint8Array(buf);for(let i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s);};
+const unb64=s=>{const r=atob(s);const b=new Uint8Array(r.length);for(let i=0;i<r.length;i++)b[i]=r.charCodeAt(i);return b;};
+async function spEncrypt(text,pass){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pass,salt);
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(text));
+  return "ENC:v1:"+b64(salt)+":"+b64(iv)+":"+b64(ct);
+}
+async function spDecrypt(payload,pass){
+  const parts=payload.split(':');
+  if(parts[0]!=='ENC'||parts.length!==5) throw new Error('bad payload');
+  const salt=unb64(parts[2]), iv=unb64(parts[3]), ct=unb64(parts[4]);
+  const key=await deriveKey(pass,salt);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);
+  return new TextDecoder().decode(pt);
+}
+function spSay(msg,cls){ spMsg.textContent=msg; spMsg.className='spstate '+(cls||''); }
+(function spInit(){
+  let stored=null;
+  try{ stored=localStorage.getItem('sr_notes'); }catch(e){}
+  if(stored){
+    const bytes=(stored.length*0.75)|0;
+    spSay('state: ciphertext at rest ('+bytes+' bytes). passphrase required.','ok');
+  }
+})();
+document.getElementById('btnSpSave').addEventListener('click',async()=>{
+  const t=document.getElementById('spText').value, p=document.getElementById('spPass').value;
+  if(!t){ spSay('state: nothing to encrypt.','bad'); return; }
+  if(p.length<8){ spSay('state: passphrase too short (min 8).','bad'); SFX.alert(); return; }
+  try{
+    const c=await spEncrypt(t,p);
+    try{ localStorage.setItem('sr_notes',c); }catch(e){}
+    spSay('state: ENCRYPTED + STORED (AES-256-GCM, fresh salt+iv).','ok');
+    SFX.success();
+  }catch(e){ spSay('state: encryption failed — WebCrypto unavailable?','bad'); }
+});
+document.getElementById('btnSpLoad').addEventListener('click',async()=>{
+  const p=document.getElementById('spPass').value;
+  let stored=null;
+  try{ stored=localStorage.getItem('sr_notes'); }catch(e){}
+  if(!stored){ spSay('state: no ciphertext stored on this device.','bad'); return; }
+  if(!p){ spSay('state: passphrase required.','bad'); return; }
+  try{
+    const t=await spDecrypt(stored,p);
+    document.getElementById('spText').value=t;
+    spSay('state: DECRYPTED — plaintext in memory only.','ok');
+    SFX.success();
+  }catch(e){
+    spSay('state: ACCESS DENIED — wrong passphrase or corrupted data.','bad');
+    SFX.alert();
+  }
+});
+document.getElementById('btnSpWipe').addEventListener('click',()=>{
+  try{ localStorage.removeItem('sr_notes'); }catch(e){}
+  document.getElementById('spText').value='';
+  spSay('state: ciphertext destroyed. memory is a liar anyway.','');
+  SFX.alert();
+});
+
+/* ---------- PROTOCOL CHECKLISTS (interactive, persisted) ---------- */
+let protoState={};
+try{ protoState=JSON.parse(localStorage.getItem('sr_proto')||'{}')||{}; }catch(e){}
+document.querySelectorAll('.pi').forEach(item=>{
+  const pid=item.dataset.pid;
+  if(protoState[pid]) item.classList.add('done');
+  item.setAttribute('role','checkbox');
+  item.setAttribute('tabindex','0');
+  item.addEventListener('click',()=>{
+    if(item.classList.contains('open')){
+      item.classList.remove('open');
+      item.classList.toggle('done');
+    }else{
+      item.classList.add('open');
+    }
+    protoState[pid]=item.classList.contains('done');
+    try{ localStorage.setItem('sr_proto',JSON.stringify(protoState)); }catch(e){}
+    SFX.click();
+  });
+  item.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); item.click(); }
+  });
+});
+
+/* ---------- THEMES / SHORTCUTS ---------- */
+const THEME_ORDER=['cyber','oled','light'];
+function cycleTheme(){
+  const i=THEME_ORDER.indexOf(SET.theme);
+  SET.theme=THEME_ORDER[(i+1)%THEME_ORDER.length];
+  saveSet(); applySet(); SFX.select();
+}
+const SECMAP={'1':'#anatomy','2':'#pins','3':'#free','4':'#lab','5':'#fieldkit','6':'#manifesto'};
+document.addEventListener('keydown',e=>{
+  const typing=e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT');
+  if(e.key==='Escape'){ document.querySelectorAll('.veil').forEach(v=>v.classList.remove('on')); return; }
+  if(typing) return;
+  if(e.key==='?' ){ veil('veilKeys'); return; }
+  if(e.key==='/' ){ e.preventDefault(); document.getElementById('shellIn').focus(); document.getElementById('lab').scrollIntoView({behavior:'smooth'}); return; }
+  if(SECMAP[e.key]){ document.querySelector(SECMAP[e.key])?.scrollIntoView({behavior:'smooth'}); return; }
+  const k=e.key.toLowerCase();
+  if(k==='d'){ toggleDark(); document.getElementById('lab').scrollIntoView({behavior:'smooth'}); }
+  else if(k==='c'){ toggleCloak(); }
+  else if(k==='t'){ cycleTheme(); }
+  else if(k==='m'){ setSfx(!SET.sfx); }
+  else if(k==='b'){ try{ sessionStorage.removeItem('sr_boot'); }catch(err){} location.reload(); }
+});
+
 /* ---------- SCROLL REVEAL ---------- */
 const io=new IntersectionObserver(entries=>{
   entries.forEach(en=>{
     if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
   });
 },{threshold:.12});
-document.querySelectorAll('.pin-row,.card,.lab-panel,.kpi>div').forEach((elm,i)=>{
+document.querySelectorAll('.pin-row,.card,.lab-panel,.kpi>div,.chipframe,.dossier').forEach((elm,i)=>{
   elm.classList.add('reveal');
   elm.style.transitionDelay=((i%4)*70)+"ms";
   io.observe(elm);
