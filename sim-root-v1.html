@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIM://ROOT — Hacker's Guide to Free Living</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Share+Tech+Mono&display=swap');
+:root{
+  --bg:#07080c;
+  --bg2:#101218;
+  --panel:#11141f;
+  --panel2:#151a28;
+  --line:#222938;
+  --line2:#2a344b;
+  --text:#dfe7f2;
+  --muted:#8a96ac;
+  --dim:#5c677b;
+  --acid:#00FF88;
+  --cyan:#00F0FF;
+  --amber:#FFD600;
+  --red:#FF2E4D;
+  --mag:#FF3DF2;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono','Share Tech Mono',ui-monospace,Menlo,monospace;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:-2;
+}
+.scanlines{
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.03) 0px,
+    rgba(255,255,255,0.03) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  mix-blend-mode:soft-light;
+  opacity:.4;
+}
+a{color:var(--acid)}
+.wrap{width:min(1220px,calc(100% - 32px)); margin-inline:auto}
+
+/* NAV */
+nav{
+  position:sticky; top:0; z-index:50;
+  border-bottom:1px solid var(--line);
+  background:rgba(7,8,12,.9);
+  backdrop-filter:blur(18px);
+}
+.nav-inner{display:flex; align-items:center; justify-content:space-between; min-height:56px; gap:20px}
+.brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.12em; font-size:.85rem}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--acid);box-shadow:0 0 16px var(--acid); animation:pulse 2s infinite}
+.badge{font-size:.68rem; letter-spacing:.18em; color:var(--acid); border:1px solid #00ff8866; padding:4px 9px; border-radius:4px; background:#00ff8812}
+.nav-links{display:flex; gap:22px; font-size:.78rem; letter-spacing:.06em}
+.nav-links a{color:var(--muted); text-decoration:none; text-transform:uppercase}
+.nav-links a:hover{color:var(--text)}
+.nav-links a b{color:var(--dim); font-weight:400; margin-right:4px}
+
+/* HERO */
+.hero{display:grid; grid-template-columns:1.15fr .85fr; gap:46px; padding:78px 0 64px; align-items:center; position:relative}
+.eyebrow{display:inline-flex; gap:10px; align-items:center; color:var(--acid); font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; font-weight:700}
+.eyebrow i{width:28px; height:1px; background:var(--acid); display:inline-block}
+h1{font-family:'Share Tech Mono',monospace; font-size:clamp(2.9rem,7vw,5.8rem); line-height:.88; letter-spacing:-.06em; margin:14px 0 18px; text-transform:uppercase}
+h1 .glitch{position:relative; display:inline-block; color:var(--text)}
+h1 .glitch::before, h1 .glitch::after{
+  content:attr(data-text); position:absolute; left:0; top:0; width:100%; height:100%; overflow:hidden;
+}
+h1 .glitch::before{animation:glitch1 .9s infinite linear alternate-reverse; color:var(--cyan); z-index:-1; clip-path:inset(0 0 60% 0)}
+h1 .glitch::after{animation:glitch2 .8s infinite linear alternate-reverse; color:var(--mag); z-index:-2; clip-path:inset(60% 0 0 0)}
+h1 span.acid{color:var(--acid); text-shadow:0 0 18px #00ff8855}
+.lead{color:var(--muted); font-size:1.05rem; max-width:58ch; line-height:1.7}
+.lead strong{color:var(--text); font-weight:700}
+.kpi{display:flex; gap:18px; margin-top:28px; flex-wrap:wrap}
+.kpi div{border:1px solid var(--line); background:linear-gradient(180deg,var(--panel),var(--bg2)); padding:10px 14px; border-radius:10px; min-width:132px}
+.kpi b{display:block; font-size:1.25rem; color:var(--acid); line-height:1}
+.kpi s{font-size:.7rem; color:var(--dim); text-decoration:none; text-transform:uppercase; letter-spacing:.12em}
+
+/* ARTIFACT */
+.artifact{position:relative; border-radius:16px; padding:12px; background:linear-gradient(180deg,#161b29,#0e1118); border:1px solid var(--line2); box-shadow:0 0 0 1px #000 inset, 0 30px 80px #000a, 0 0 40px #00ff8815}
+.artifact::before, .artifact::after{content:""; position:absolute; width:22px; height:22px; border:2px solid var(--acid)}
+.artifact::before{top:-2px; left:-2px; border-right:0; border-bottom:0; border-radius:10px 0 0 0}
+.artifact::after{bottom:-2px; right:-2px; border-left:0; border-top:0; border-radius:0 0 10px 0}
+.artifact img{width:100%; display:block; border-radius:10px; filter:contrast(1.15) saturate(1.1)}
+.artifact .label-bar{display:flex; justify-content:space-between; align-items:center; font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:10px}
+.artifact .label-bar span:last-child{color:var(--acid)}
+.scan-line{position:absolute; left:12px; right:12px; height:2px; background:linear-gradient(90deg,transparent,var(--acid),transparent); top:30%; animation:scan 3.2s ease-in-out infinite; box-shadow:0 0 12px var(--acid); opacity:.8}
+.console-line{font-size:.75rem; color:var(--acid); background:#00ff880d; border:1px dashed #00ff8833; padding:6px 10px; border-radius:6px; margin-top:12px; display:flex; gap:8px; align-items:center}
+.console-line b{width:6px; height:10px; background:var(--acid); display:inline-block; animation:blink 1s steps(2) infinite}
+
+/* SECTIONS */
+section{padding:64px 0; border-top:1px solid #171d2a; position:relative}
+h2{font-family:'Share Tech Mono',monospace; font-size:clamp(1.8rem,3.8vw,2.7rem); line-height:.95; letter-spacing:-.03em; margin:0 0 12px; text-transform:uppercase}
+h2 i{color:var(--acid); font-style:normal}
+.sub{color:var(--muted); max-width:72ch; margin:0 0 28px; font-size:.98rem}
+.sub em{color:var(--amber); font-style:normal; background:#FFD60012; border:1px solid #FFD60022; padding:1px 6px; border-radius:4px}
+
+/* PINS */
+.pins-layout{display:grid; grid-template-columns:.95fr 1.15fr; gap:28px; align-items:start}
+.pin-list{display:grid; gap:10px}
+.pin-row{
+  display:grid; grid-template-columns:94px 1fr; gap:14px;
+  border:1px solid var(--line); background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-radius:10px; padding:14px 14px 12px; transition:.2s;
+  cursor:pointer;
+}
+.pin-row:hover, .pin-row.active{border-color:#00ff8866; transform:translateX(4px); box-shadow:0 0 0 1px #00ff8822 inset}
+.pin-tag{height:fit-content; padding:6px 8px; border-radius:6px; font-weight:800; font-size:.78rem; letter-spacing:.08em; text-align:center; border:1px solid}
+.tag-vcc{background:#00ff8815; color:var(--acid); border-color:#00ff8833}
+.tag-rst{background:#00f0ff15; color:var(--cyan); border-color:#00f0ff33}
+.tag-clk{background:#ffd60015; color:var(--amber); border-color:#ffd60033}
+.tag-gnd{background:#ffffff0f; color:#c7d0de; border-color:#ffffff1a}
+.tag-vpp{background:#ff2e4d15; color:var(--red); border-color:#ff2e4d33}
+.tag-io{background:#9b5cff15; color:#9b5cff; border-color:#9b5cff33}
+.tag-usb{background:#ff3df215; color:var(--mag); border-color:#ff3df233}
+.pin-row h3{margin:0 0 4px; font-size:.96rem; letter-spacing:.02em}
+.pin-row p{margin:0; font-size:.86rem; color:var(--muted); line-height:1.5}
+.pin-row small{display:block; margin-top:6px; color:var(--dim); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase}
+
+.highlight-box{
+  border:1px solid var(--line2); background:#0c1019; border-radius:12px; padding:16px;
+}
+.highlight-box .bar{display:flex; gap:8px; margin-bottom:14px}
+.bar i{width:10px; height:10px; border-radius:50%; display:block}
+.term{font-size:.84rem; color:var(--muted); line-height:1.65; max-height:520px; overflow:auto}
+.term b{color:var(--text)}
+.term .comment{color:#4a5466}
+.term .ok{color:var(--acid)}
+.term .warn{color:var(--amber)}
+
+/* OPSEC GRID */
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+.card{border:1px solid var(--line); background:radial-gradient(120% 120% at 0% 0%, #1a2236 0%, var(--panel) 40%), var(--panel); border-radius:14px; padding:22px; position:relative; overflow:hidden}
+.card::before{content:""; position:absolute; inset:0; background:linear-gradient(100deg, transparent 20%, rgba(0,255,136,0.07) 50%, transparent 80%); transform:translateX(-100%); transition:.6s}
+.card:hover::before{transform:translateX(100%)}
+.card h3{margin:4px 0 8px; font-size:1.05rem}
+.card p{margin:0; color:var(--muted); font-size:.9rem}
+.step-num{font-size:.72rem; letter-spacing:.18em; color:var(--acid); font-weight:800}
+.card ul{margin:12px 0 0; padding:0 0 0 18px; color:var(--muted); font-size:.86rem}
+.card li{margin:4px 0}
+
+/* TERMINAL */
+.terminal{border-radius:12px; border:1px solid #00ff8844; background:#05080b; overflow:hidden; box-shadow:0 0 0 1px #00ff8811 inset, 0 20px 60px #0009}
+.term-head{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#0a1511; border-bottom:1px solid #00ff8822; font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:var(--acid)}
+.term-body{padding:22px; font-size:.88rem; color:#b8f5d6; line-height:1.7}
+.term-body .prompt{color:var(--acid)}
+.term-body .cmd{color:var(--text)}
+.blink{animation:blink 1s steps(2) infinite}
+
+/* FOOTER */
+footer{padding:40px 0 70px; border-top:1px solid var(--line); color:var(--dim); font-size:.8rem}
+footer strong{color:var(--muted)}
+
+/* ANIM */
+@keyframes pulse{0%,100%{opacity:1} 50%{opacity:.4}}
+@keyframes blink{0%,50%{opacity:1} 51%,100%{opacity:0}}
+@keyframes scan{0%{top:15%} 50%{top:82%} 100%{top:15%}}
+@keyframes glitch1{0%{transform:translate(0)} 20%{transform:translate(-2px,1px)} 40%{transform:translate(1px,-1px)} 60%{transform:translate(-1px,0)} 80%{transform:translate(2px,1px)} 100%{transform:translate(0)}}
+@keyframes glitch2{0%{transform:translate(0)} 20%{transform:translate(2px,-1px)} 40%{transform:translate(-1px,1px)} 60%{transform:translate(1px,0)} 80%{transform:translate(-1px,-1px)} 100%{transform:translate(0)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr; padding-top:36px}
+  .artifact{max-width:520px; margin-inline:auto; order:-1}
+  .pins-layout{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<nav>
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="dot"></span> SIM://ROOT <span class="badge">CLASS: UNTRACEABLE</span></div>
+    <div class="nav-links">
+      <a href="#anatomy"><b>01</b> ANATOMY</a>
+      <a href="#pins"><b>02</b> PINS</a>
+      <a href="#free"><b>03</b> FREE_PROTOCOLS</a>
+      <a href="#manifesto"><b>04</b> MANIFESTO</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="hero" style="border:0">
+    <div>
+      <div class="eyebrow"><i></i> deconstructing your digital collar</div>
+      <h1><span class="glitch" data-text="SIM CARD">SIM CARD</span><br><span class="acid">PARTS &</span><br>FUNCTIONS</h1>
+      <p class="lead">
+        That tiny gold chip in your pocket is a <strong>tamper-resistant computer</strong> that decides who you are to the network. Corporations want you to ignore it. Hackers learn to <strong>read it, control it, and kill-switch it</strong>.<br><br>
+        This is your field manual for understanding the leash — so you can live without it when you choose to.
+      </p>
+      <div class="kpi">
+        <div><b>6 CONTACTS</b><s>+2 USB OPT</s></div>
+        <div><b>ISO 7816</b><s>SMART-CARD PROTOCOL</s></div>
+        <div><b>NO TRACK</b><s>IF YOU OWN IT</s></div>
+      </div>
+    </div>
+
+    <div class="artifact" id="artifact">
+      <div class="label-bar"><span>[REF_IMG_01] / SIM_CARD_PARTS_AND_FUNCTIONS.JPG</span><span>● ENCRYPTED</span></div>
+      <div style="position:relative; overflow:hidden; border-radius:10px">
+        <img src="image.png" alt="SIM Card Parts and Functions diagram - original intel">
+        <div class="scan-line"></div>
+      </div>
+      <div class="console-line"><b></b><span id="typewriter">> analyzing contacts: VCC... GND... I/O... [OK]</span></div>
+    </div>
+  </section>
+
+  <section id="anatomy">
+    <div class="eyebrow">file_01 // anatomy</div>
+    <h2>THE CHIP <i>IS NOT</i> THE PLASTIC</h2>
+    <p class="sub">
+      The image you gave us is the only thing the telco wants you to see: <em>harmless gold pads</em>. Truth is, under those 6 pads sits a full microcontroller with its own OS, crypto keys, and file system. The plastic carrier is just a handle. The computer is underneath.
+      <br><br>Break it down and you break free.
+    </p>
+
+    <div class="pins-layout" id="pins">
+      <div class="pin-list">
+        <div class="pin-row active" data-pin="vcc">
+          <div class="pin-tag tag-vcc">VCC // C1</div>
+          <div>
+            <h3>Voltage Supply — The Juice</h3>
+            <p>Power pin. Feeds 1.8V / 3V / 5V to the chip. Cut this, the SIM dies instantly. Free living protocol: kill-switch = airplane mode + physical ejection.</p>
+            <small>CORE EXPLOIT: No power = No IMSI catcher can handshake</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="rst">
+          <div class="pin-tag tag-rst">RESET // C2</div>
+          <div>
+            <h3>Reset — The Reboot</h3>
+            <p>Forces cold reset of the SIM OS. Phone pulls RST low to restart authentication. Understand this if you build your own readers.</p>
+            <small>NOTE: Every boot = new RAND challenge from tower</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="clk">
+          <div class="pin-tag tag-clk">CLOCK // C3</div>
+          <div>
+            <h3>Clock — The Heartbeat</h3>
+            <p>Timing signal, usually 1-5 MHz. Synchronizes data between phone baseband and SIM. Jitter here = failed auth. High-frequency analysis can leak operations (side-channel 101).</p>
+            <small>FREEDOM INTEL: Faraday + no clock = invisible</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="gnd">
+          <div class="pin-tag tag-gnd">GROUND // C5</div>
+          <div>
+            <h3>Ground — The Reference</h3>
+            <p>Electrical zero. Without clean ground, the rest lies. In opsec terms: your digital ground truth is your threat model.</p>
+            <small>METAPHOR: Know your baseline before you go dark</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="vpp">
+          <div class="pin-tag tag-vpp">VPP // C6</div>
+          <div>
+            <h3>Programming Voltage — The Ghost</h3>
+            <p>Legacy pin. Used decades ago to flash higher voltage for EEPROM write. Today NC (Not Connected) on most operators. Kept for backwards compatibility. Like surveillance laws — obsolete but still there.</p>
+            <small>HACKER NOTE: Modern 5V-tolerant SIMs ignore this</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="io">
+          <div class="pin-tag tag-io">I/O // C7</div>
+          <div>
+            <h3>Input / Output — The Mouth</h3>
+            <p>Single-wire bidirectional half-duplex. This is where all the secrets travel: IMSI, AUTH responses, SMS, contacts. T=0 protocol. Intercept here = you own the identity. That's why it's encrypted inside.</p>
+            <small>RED TEAM: This pin is the only thing towers actually talk to</small>
+          </div>
+        </div>
+        <div class="pin-row" data-pin="usb">
+          <div class="pin-tag tag-usb">USB // C4/C8</div>
+          <div>
+            <h3>Optional USB Pad — The Backdoor</h3>
+            <p>High-speed USB 2.0 pins for Inter-Chip USB SIMs. Allows 12Mbps vs 100k of I/O. New eUICC use this for rapid profile swaps. Your key to burner eSIM life: fast, remote, untraceable reprovision.</p>
+            <small>FREE LIVING: eSIM = no physical SIM to find</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div class="bar"><i style="background:var(--red)"></i><i style="background:var(--amber)"></i><i style="background:var(--acid)"></i><span style="margin-left:auto; font-size:.65rem; letter-spacing:.15em; color:var(--dim)">SIM_TRACE.LOG</span></div>
+        <div class="term" id="termLog">
+<span class="comment">// boot sequence captured via cheap reader ($8) - educational only</span><br>
+<span class="prompt">AT+CSIM=14,"A0A40000023F00"</span> <span class="comment"># SELECT MF</span><br>
+<b>&lt;&lt; 61 12 : READY</b><br><br>
+<span class="comment">// who are you? IMSI request</span><br>
+<span class="prompt">0x88 0x88 ... AUTH_REQ</span><br>
+<b>RAND:</b> 4F:C9:12:FA:88:01...<br>
+<b>SIM:</b> COMPUTE Ki + OPc => SRES, Kc<br>
+<span class="ok">[OK] RESPONSE 32 bytes</span><br><br>
+<span class="comment">// what they store:</span><br>
+- ICCID: 89 44... <span class="comment"># your physical card serial</span><br>
+- IMSI: MCC+MNC+MSIN <span class="comment"># your subscription identity - TRACKED</span><br>
+- Ki: <span class="warn">NEVER LEAVES CHIP</span> <span class="comment"># this is why cloning is hard</span><br>
+- SMS / ADN: ~250 contacts max<br>
+- LO: PLMN, forbidden networks<br><br>
+<span class="comment">// free-living countermeasures:</span><br>
+<span class="ok">[1] PIN lock SIM (AT+CLCK="SC")</span><br>
+<span class="ok">[2] Disable 2G - blocks most IMSI catchers</span><br>
+<span class="ok">[3] Use prepaid data-only + VoIP</span><br>
+<span class="ok">[4] Physically remove when not needed</span><br>
+        </div>
+        <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <div style="border:1px solid var(--line); padding:10px; border-radius:8px; font-size:.78rem">
+            <b style="color:var(--amber)">⚠ THREAT:</b><br><span style="color:var(--muted)">IMSI Catchers (Stingrays) force your SIM to attach via C1/C7 handshake. Catches IMSI even with data off.</span>
+          </div>
+          <div style="border:1px solid var(--line); padding:10px; border-radius:8px; font-size:.78rem">
+            <b style="color:var(--acid)">✓ DEFENSE:</b><br><span style="color:var(--muted)">Faraday sleeve ($5), 4G/5G-only mode, eSIM profiles that rotate weekly.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="free">
+    <div class="eyebrow">file_02 // free_living_protocols</div>
+    <h2>OWN YOUR SIGNAL, <i>OWN YOUR LIFE</i></h2>
+    <p class="sub">A hacker doesn't use tech to steal free phone bills. That's petty and gets you caught. A hacker uses <em>understanding</em> to become un-leashable. Here are 3 protocols from the field.</p>
+    
+    <div class="grid">
+      <article class="card">
+        <div class="step-num">PROTOCOL 01 — BURNER IDENTITY</div>
+        <h3>Disposable Self</h3>
+        <p>The SIM is you. So don't be you.</p>
+        <ul>
+          <li>Prepaid cash SIM, no ID (where legal) or eSIM with privacy.com VCC</li>
+          <li>Activate on public WiFi, never home IP</li>
+          <li>Rotate every 14-90 days. Destroy chip with hammer (VCC pad)</li>
+          <li>Never tie to banking / real ID</li>
+        </ul>
+      </article>
+      <article class="card">
+        <div class="step-num">PROTOCOL 02 — OFF-GRID COMMS</div>
+        <h3>Air-Gapped Mind</h3>
+        <p>Keep your baseband processor from snitching.</p>
+        <ul>
+          <li>De-googled phone + no SIM for daily driver (WiFi VoIP)</li>
+          <li>Second Faraday-boxed phone for sensitive calls</li>
+          <li>Signal / Session on WiFi, never SMS for 2FA</li>
+          <li>PIN the SIM + set SIM lock attempts to 3</li>
+        </ul>
+      </article>
+      <article class="card">
+        <div class="step-num">PROTOCOL 03 — SIGNAL DISCIPLINE</div>
+        <h3>Die Living Free</h3>
+        <p>The network logs when and where C7 answered. Minimize that.</p>
+        <ul>
+          <li>Airplane mode = default. You call tower, not the reverse</li>
+          <li>Power off before protest / border / sensitive meet</li>
+          <li>Never power on two SIMs (real + burner) together</li>
+          <li>Nano-SIM: 12.3×8.8×0.67mm — easy to hide, easy to destroy</li>
+        </ul>
+      </article>
+    </div>
+
+    <div style="margin-top:18px; display:grid; grid-template-columns:1.2fr .8fr; gap:16px">
+      <div class="card" style="border-color:#FFD60033">
+        <div class="step-num" style="color:var(--amber)">INTEL DROP — WHAT SIM DOESN'T STORE</div>
+        <h3 style="color:var(--amber)">Corp Myth vs Reality</h3>
+        <p>Telcos love you thinking everything is "on the SIM". It's not:</p>
+        <ul>
+          <li><b style="color:var(--text)">NOT on SIM:</b> Your photos, full call history, browsing. That's phone / cloud / carrier HLR.</li>
+          <li><b style="color:var(--text)">ON SIM:</b> Ki (secret), IMSI, ICCID, some contacts, PLMN prefs, carrier keys.</li>
+          <li><b style="color:var(--text)">Future:</b> eSIM / iSIM — same logic, soldered. No plastic to pull. Learn to rewrite profiles before it solders you in.</li>
+        </ul>
+      </div>
+      <div class="terminal" style="min-height:200px">
+        <div class="term-head"><span>root@freebox:~</span><span>LIVE</span></div>
+        <div class="term-body">
+<span class="prompt">$</span> <span class="cmd">cat /manifesto/free_living.txt</span><br><br>
+The goal is not to get free service.<br>
+The goal is to make service <b style="color:var(--acid)">optional</b>.<br><br>
+If you need the network to live,<br>
+you are not alive. You are subscribed.<br><br>
+<span class="prompt">$</span> <span class="cmd">rm -rf /fear</span> <span class="blink">█</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="manifesto">
+    <div class="eyebrow">final_payload</div>
+    <h2>THE MANIFESTO: <i>FREE LIVING</i> IS A SKILL</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start">
+      <div>
+        <p class="sub" style="margin-bottom:16px">
+          This diagram from <b style="color:var(--text)">@tipsfcworld</b> is normally boring ISP training material. Reframe it and it's a map of your leash.
+          Every pad is a point where you negotiate with a trillion-dollar surveillance grid.
+          Know it cold.
+        </p>
+        <div class="card" style="background:#0b0e14">
+          <h3 style="font-size:.9rem; letter-spacing:.12em">BUILD YOUR OWN READER — ETHICAL ONLY</h3>
+          <p style="font-size:.84rem">Arduino + SIM slot: VCC-&gt;5V via LDO, GND-&gt;GND, RST-&gt;D2, CLK-&gt;D3, I/O-&gt;D4 (with 1k). Dump ATR with <code style="background:#ffffff0a; padding:2px 6px; border-radius:4px">AT+CSIM</code>. Never share Ki attempts, never clone. Use to WIP your own SIM for understanding ISO 7816-3 T=0.</p>
+        </div>
+        <p style="color:var(--dim); font-size:.78rem; margin-top:16px; line-height:1.5">
+          *VPP is almost always legacy. C4/C8 USB are optional and rare outside eUICC. Labels vary by manufacturer. This guide is educational. No instructions for bypassing carrier billing, cloning, or illegal interception. Knowledge is freedom, abuse is prison.
+        </p>
+      </div>
+      <div class="artifact" style="padding:8px">
+        <img src="image.png" alt="SIM diagram closeup repeated for final grid" style="filter:grayscale(1) contrast(1.2) brightness(.9) sepia(.3) hue-rotate(80deg)">
+        <div style="padding:10px 6px 2px; font-size:.7rem; color:var(--muted); letter-spacing:.08em; line-height:1.4">
+          ORIGINAL INTEL // INCOMING FILE: image.png<br>
+          RE-ANALYZED FOR FREE HUMANS<br>
+          <span style="color:var(--acid)">[CLASSIFICATION DOWNGRADED: PUBLIC]</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap">
+    <div><strong>SIM://ROOT v2.1</strong> — Hacked from a boring telecom slide into a field guide. Built for Bradford, UK node. Stay free.<br>
+    Use this knowledge to protect privacy, not to defraud networks. FCC / Ofcom rules still apply.</div>
+    <div style="text-align:right">SRC: image.png (user upload)<br>INSP: @tipsfcworld base diagram remixed<br>MODE: EDUCATIONAL // OFF-GRID</div>
+  </div>
+</footer>
+
+<script>
+const rows = document.querySelectorAll('.pin-row');
+rows.forEach(r=>{
+  r.addEventListener('mouseenter',()=>{
+    rows.forEach(x=>x.classList.remove('active'));
+    r.classList.add('active');
+  })
+});
+const lines = ["> analyzing contacts: VCC... GND... I/O... [OK]","> IMSI catcher scan: 0 found. You are clean.","> PIN protection: ENABLE IT. PUK = carrier only.","> Reminder: Free living > free service."];
+let li=0; let ci=0; 
+const el=document.getElementById('typewriter');
+setInterval(()=>{
+  if(!el) return;
+  el.textContent = lines[li].slice(0, ci++);
+  if(ci>lines[li].length+14){ci=0; li=(li+1)%lines.length}
+},90);
+</script>
+</body>
+</html>
