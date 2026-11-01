@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>1FILES — Zero-Dependency Single-File Software Vault</title>
   <meta name="description" content="Complete standalone apps and security tools shipped as ONE self-contained HTML file. No build steps. No npm packages. No server. Runs offline in any browser.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #07080c;
@@ -21,8 +18,8 @@
       --red: #FF2E4D;
       --text: #e2e8f0;
       --text-muted: #94a3b8;
-      --mono: 'JetBrains Mono', monospace;
-      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --mono: ui-monospace, Menlo, Consolas, "JetBrains Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,6 +34,31 @@
       background-image: 
         radial-gradient(ellipse 60% 40% at 50% -10%, rgba(0, 255, 136, 0.12), transparent),
         radial-gradient(circle 800px at 100% 40%, rgba(0, 240, 255, 0.08), transparent);
+    }
+
+    /* Skip Navigation Link */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      background: var(--acid);
+      color: #051a0e;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      z-index: 9999;
+      text-decoration: none;
+      transition: top 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 16px var(--acid-glow);
+    }
+
+    .skip-link:focus, .skip-link:focus-visible {
+      top: 16px;
+      clip: auto;
+      opacity: 1;
+      outline: 2px solid #fff;
     }
 
     .wrap {
@@ -60,6 +82,15 @@
       padding-bottom: 28px;
       border-bottom: 1px solid var(--card-border);
       margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    nav[role="navigation"] {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
       flex-wrap: wrap;
       gap: 16px;
     }
@@ -230,7 +261,100 @@
       line-height: 1.5;
     }
 
-    /* Vault Table / Grid */
+    /* Search & Filter Controls */
+    .search-filter-section {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--acid);
+      box-shadow: 0 0 12px var(--acid-glow);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filter-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-chip:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .filter-chip.active, .filter-chip[aria-pressed="true"] {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: var(--acid);
+      color: var(--acid);
+      box-shadow: 0 0 12px var(--acid-glow);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      background: var(--card);
+      border: 1px dashed var(--card-border);
+      border-radius: 16px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 1rem;
+      margin-bottom: 48px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Vault Section */
     .vault-section-header {
       display: flex;
       justify-content: space-between;
@@ -304,6 +428,12 @@
       border: 1px solid rgba(0, 240, 255, 0.25);
     }
 
+    .pill-amber {
+      background: rgba(255, 214, 0, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 214, 0, 0.25);
+    }
+
     .file-size {
       font-family: var(--mono);
       font-size: 0.75rem;
@@ -352,7 +482,7 @@
       gap: 10px;
     }
 
-    .app-actions a {
+    .app-actions button, .app-actions a {
       flex: 1;
       text-align: center;
       justify-content: center;
@@ -407,9 +537,11 @@
       font-size: 1.4rem;
       cursor: pointer;
       line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
 
-    .modal-close:hover { color: var(--red); }
+    .modal-close:hover { color: var(--red); background: rgba(255, 255, 255, 0.05); }
 
     .modal-iframe {
       width: 100%;
@@ -432,150 +564,224 @@
   </style>
 </head>
 <body>
+  <a href="#vault" class="skip-link">Skip to vault software content</a>
   <div class="scanlines"></div>
   <div class="wrap">
     <header>
-      <a href="#" class="brand">
-        <div class="logo-badge">📄</div>
-        <div>
-          <div class="brand-title">1<span>FILES</span> // REPOSITORY</div>
-          <div class="brand-sub">Zero-Dependency Single-File Vault</div>
+      <nav role="navigation" aria-label="Main Navigation">
+        <a href="#" class="brand">
+          <div class="logo-badge">📄</div>
+          <div>
+            <div class="brand-title">1<span>FILES</span> // REPOSITORY</div>
+            <div class="brand-sub">Zero-Dependency Single-File Vault</div>
+          </div>
+        </a>
+        <div class="header-links">
+          <a href="https://github.com/LIN4CRE/1files" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+            ⭐ GitHub Repository
+          </a>
+          <a href="https://www.linacre.site/" target="_blank" rel="noopener noreferrer" class="btn btn-acid">
+            linacre.site
+          </a>
         </div>
-      </a>
-      <div class="header-links">
-        <a href="https://github.com/LIN4CRE/1files" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
-          ⭐ GitHub Repository
-        </a>
-        <a href="https://www.linacre.site/" target="_blank" rel="noopener noreferrer" class="btn btn-acid">
-          linacre.site
-        </a>
-      </div>
+      </nav>
     </header>
 
-    <!-- Hero Banner Presentation -->
-    <div class="hero-banner">
-      <img src="banner.png" alt="1Files Zero-Dependency Single-File Software Vault" onerror="this.src='banner.jpg'" />
-      <div class="hero-overlay">
-        <div class="hero-text">
-          <h1>Complete Software. <span>One HTML File.</span></h1>
-          <p>No build systems. No npm dependencies. No server backends. Save any file locally, double-click in any browser, and it runs 100% offline forever.</p>
-        </div>
-        <div>
-          <a href="#vault" class="btn btn-acid">⚡ Explore The Vault</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Manifesto Pillars -->
-    <div class="pillars">
-      <div class="pillar-card">
-        <div class="pillar-icon">📦</div>
-        <div class="pillar-title">Zero Dependency</div>
-        <div class="pillar-desc">All HTML, CSS, JavaScript, icons, and audio synthesis inline in a single document. Zero external CDN calls needed.</div>
-      </div>
-      <div class="pillar-card">
-        <div class="pillar-icon">🔒</div>
-        <div class="pillar-title">100% Offline & Private</div>
-        <div class="pillar-desc">Your inputs and keys never touch a server. Operates completely in-memory and in client-side LocalStorage / IndexedDB.</div>
-      </div>
-      <div class="pillar-card">
-        <div class="pillar-icon">💾</div>
-        <div class="pillar-title">Preservation Ready</div>
-        <div class="pillar-desc">Save to a USB flash drive or air-gapped laptop. Will continue to render identically 30 years from now.</div>
-      </div>
-    </div>
-
-    <!-- The Vault -->
-    <div id="vault">
-      <div class="vault-section-header">
-        <div class="vault-title">
-          <span>⚡</span> Active Single-File Software Collection
-        </div>
-        <div style="font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted);">
-          HOUSE RULE: 1 FILE PER APPLICATION
-        </div>
-      </div>
-
-      <div class="apps-grid">
-        <!-- App 1: SIM://ROOT v3.1 Infiltration Lab -->
-        <div class="app-card">
-          <div>
-            <div class="app-badge-row">
-              <span class="app-pill pill-green">FLAGSHIP LAB</span>
-              <span class="file-size">104.9 KB · HTML</span>
+    <main role="main">
+      <!-- Hero Banner Presentation -->
+      <section class="hero-section" aria-label="Introduction">
+        <div class="hero-banner">
+          <img src="banner.png" alt="1Files Zero-Dependency Single-File Software Vault" onerror="this.src='banner.jpg'" />
+          <div class="hero-overlay">
+            <div class="hero-text">
+              <h1>Complete Software. <span>One HTML File.</span></h1>
+              <p>No build systems. No npm dependencies. No server backends. Save any file locally, double-click in any browser, and it runs 100% offline forever.</p>
             </div>
-            <div class="app-name">SIM://ROOT v3.1</div>
-            <div class="app-desc">The ultimate client-side SIM card & cellular field laboratory. Interactive pinout diagrams, live APDU command builder, radar telemetry simulation, encrypted AES notebook, and terminal shell.</div>
-            <ul class="app-features">
-              <li>Interactive ISO 7816-3 contact net pinout</li>
-              <li>Hex APDU command generator with response decoding</li>
-              <li>Encrypted local-first field notes with AES-GCM</li>
-              <li>Simulated cellular baseband radar sweep</li>
-            </ul>
+            <div>
+              <a href="#vault" class="btn btn-acid">⚡ Explore The Vault</a>
+            </div>
           </div>
-          <div class="app-actions">
-            <button class="btn btn-acid" onclick="openPreview('sim-root.html', 'SIM://ROOT v3.1 — Digital Infiltration Lab')">🚀 Launch Lab</button>
-            <a href="sim-root.html" download="sim-root.html" class="btn btn-outline">📥 Download</a>
+        </div>
+      </section>
+
+      <!-- Manifesto Pillars -->
+      <section class="pillars-section" aria-label="Manifesto Pillars">
+        <div class="pillars">
+          <div class="pillar-card">
+            <div class="pillar-icon">📦</div>
+            <div class="pillar-title">Zero Dependency</div>
+            <div class="pillar-desc">All HTML, CSS, JavaScript, icons, and audio synthesis inline in a single document. Zero external CDN calls needed.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">🔒</div>
+            <div class="pillar-title">100% Offline & Private</div>
+            <div class="pillar-desc">Your inputs and keys never touch a server. Operates completely in-memory and in client-side LocalStorage / IndexedDB.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">💾</div>
+            <div class="pillar-title">Preservation Ready</div>
+            <div class="pillar-desc">Save to a USB flash drive or air-gapped laptop. Will continue to render identically 30 years from now.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Filters -->
+      <section class="search-section" aria-label="Vault Catalog Search and Filters">
+        <div class="search-filter-section">
+          <div class="search-row">
+            <input type="search" id="search" class="search-input" placeholder="Search single-file apps (e.g. crypto, audio, sim, data)..." aria-label="Search single-file apps" />
+          </div>
+          <div class="filter-chips" role="toolbar" aria-label="Category Filters">
+            <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All (5)</button>
+            <button type="button" class="filter-chip" data-filter="security" aria-pressed="false">Security (2)</button>
+            <button type="button" class="filter-chip" data-filter="crypto" aria-pressed="false">Crypto (1)</button>
+            <button type="button" class="filter-chip" data-filter="audio" aria-pressed="false">Audio (1)</button>
+            <button type="button" class="filter-chip" data-filter="utilities" aria-pressed="false">Utilities (1)</button>
+          </div>
+          <div id="searchResultsLive" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+        </div>
+      </section>
+
+      <!-- The Vault -->
+      <section id="vault" class="vault-section" aria-labelledby="vaultHeading" tabindex="-1">
+        <div class="vault-section-header">
+          <h2 id="vaultHeading" class="vault-title">
+            <span>⚡</span> Active Single-File Software Collection
+          </h2>
+          <div style="font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted);">
+            HOUSE RULE: 1 FILE PER APPLICATION
           </div>
         </div>
 
-        <!-- App 2: SIM://ROOT v1 Classic Field Guide -->
-        <div class="app-card">
-          <div>
-            <div class="app-badge-row">
-              <span class="app-pill pill-cyan">CLASSIC EDITION</span>
-              <span class="file-size">25.3 KB · HTML</span>
-            </div>
-            <div class="app-name">SIM://ROOT v1</div>
-            <div class="app-desc">The original lightweight hacker's field guide to your SIM card. Hardware architecture, electrical pinout intel, network routing guide, and cellular security fundamentals.</div>
-            <ul class="app-features">
-              <li>Ultra-lightweight 25KB single-file footprint</li>
-              <li>Interactive pinout coordinate inspector</li>
-              <li>IMSI / Ki / ICCID algorithmic breakdown</li>
-              <li>Strict zero-tracker terminal aesthetic</li>
-            </ul>
-          </div>
-          <div class="app-actions">
-            <button class="btn btn-acid" onclick="openPreview('sim-root-v1.html', 'SIM://ROOT v1 — Classic Field Guide')">🚀 Launch Guide</button>
-            <a href="sim-root-v1.html" download="sim-root-v1.html" class="btn btn-outline">📥 Download</a>
-          </div>
+        <div id="noResultsMessage" class="empty-state" style="display: none;">
+          No tools found matching your search.
         </div>
 
-        <!-- App 3: Single-File Audio Tone Generator -->
-        <div class="app-card">
-          <div>
-            <div class="app-badge-row">
-              <span class="app-pill pill-green">UTILITY</span>
-              <span class="file-size">18.4 KB · HTML</span>
+        <div class="apps-grid" id="appsGrid">
+          <!-- App 1: SIM://ROOT v3.1 Infiltration Lab -->
+          <div class="app-card" data-app-id="sim-root" data-category="security" data-filename="sim-root.html" data-title="SIM://ROOT v3.1" data-tags="sim card cellular gsm hex apdu crypto security radio terminal">
+            <div>
+              <div class="app-badge-row">
+                <span class="app-pill pill-green">FLAGSHIP LAB</span>
+                <span class="file-size">104.9 KB · HTML</span>
+              </div>
+              <div class="app-name">SIM://ROOT v3.1</div>
+              <div class="app-desc">The ultimate client-side SIM card & cellular field laboratory. Interactive pinout diagrams, live APDU command builder, radar telemetry simulation, encrypted AES notebook, and terminal shell.</div>
+              <ul class="app-features">
+                <li>Interactive ISO 7816-3 contact net pinout</li>
+                <li>Hex APDU command generator with response decoding</li>
+                <li>Encrypted local-first field notes with AES-GCM</li>
+                <li>Simulated cellular baseband radar sweep</li>
+              </ul>
             </div>
-            <div class="app-name">Web Audio Tone Lab</div>
-            <div class="app-desc">Zero-dependency client-side Web Audio oscillator and spectrum generator. Produces pure sine, triangle, square, sawtooth tones, binaural beats, and pink/brownian noise.</div>
-            <ul class="app-features">
-              <li>Synthesizes real-time audio at 44.1 kHz via Web Audio API</li>
-              <li>Logarithmic frequency slider (20 Hz - 20,000 Hz)</li>
-              <li>Stereo binaural panning for brainwave synchronization</li>
-              <li>No audio samples or external sound files needed</li>
-            </ul>
+            <div class="app-actions">
+              <button type="button" class="btn btn-acid" onclick="openPreview('sim-root.html', 'SIM://ROOT v3.1 — Digital Infiltration Lab')">🚀 Launch Lab</button>
+              <a href="sim-root.html" download="sim-root.html" class="btn btn-outline">📥 Download</a>
+            </div>
           </div>
-          <div class="app-actions">
-            <a href="https://lin4cre.github.io/easy-audiobook-player/" target="_blank" class="btn btn-acid">🚀 Launch Player</a>
-            <a href="https://github.com/LIN4CRE/1files" target="_blank" class="btn btn-outline">⭐ Star Repo</a>
+
+          <!-- App 2: SIM://ROOT v1 Classic Field Guide -->
+          <div class="app-card" data-app-id="sim-root-v1" data-category="security" data-filename="sim-root-v1.html" data-title="SIM://ROOT v1" data-tags="sim card cellular hardware pinout guide classic reverse engineering">
+            <div>
+              <div class="app-badge-row">
+                <span class="app-pill pill-cyan">CLASSIC EDITION</span>
+                <span class="file-size">25.3 KB · HTML</span>
+              </div>
+              <div class="app-name">SIM://ROOT v1</div>
+              <div class="app-desc">The original lightweight hacker's field guide to your SIM card. Hardware architecture, electrical pinout intel, network routing guide, and cellular security fundamentals.</div>
+              <ul class="app-features">
+                <li>Ultra-lightweight 25KB single-file footprint</li>
+                <li>Interactive pinout coordinate inspector</li>
+                <li>IMSI / Ki / ICCID algorithmic breakdown</li>
+                <li>Strict zero-tracker terminal aesthetic</li>
+              </ul>
+            </div>
+            <div class="app-actions">
+              <button type="button" class="btn btn-acid" onclick="openPreview('sim-root-v1.html', 'SIM://ROOT v1 — Classic Field Guide')">🚀 Launch Guide</button>
+              <a href="sim-root-v1.html" download="sim-root-v1.html" class="btn btn-outline">📥 Download</a>
+            </div>
+          </div>
+
+          <!-- App 3: Web Audio Tone Lab -->
+          <div class="app-card" data-app-id="tone-lab" data-category="audio" data-filename="tone-lab.html" data-title="Web Audio Tone Lab" data-tags="audio sound tone oscillator binaural beats noise synthesizer web audio spectrum visualizer oscilloscope">
+            <div>
+              <div class="app-badge-row">
+                <span class="app-pill pill-green">ACOUSTIC LAB</span>
+                <span class="file-size">66.2 KB · HTML</span>
+              </div>
+              <div class="app-name">Web Audio Tone Lab</div>
+              <div class="app-desc">Zero-dependency client-side Web Audio oscillator and spectrum generator. Produces pure sine, triangle, square, sawtooth tones, binaural beats, and pink/brownian noise.</div>
+              <ul class="app-features">
+                <li>Synthesizes real-time audio at 44.1 kHz via Web Audio API</li>
+                <li>Logarithmic frequency slider (20 Hz - 20,000 Hz)</li>
+                <li>Stereo binaural panning for brainwave synchronization</li>
+                <li>Dual canvas oscilloscope and FFT spectrum analyzers</li>
+              </ul>
+            </div>
+            <div class="app-actions">
+              <button type="button" class="btn btn-acid" onclick="openPreview('tone-lab.html', 'Web Audio Tone Lab — Acoustic Synthesizer')">🚀 Launch Lab</button>
+              <a href="tone-lab.html" download="tone-lab.html" class="btn btn-outline">📥 Download</a>
+            </div>
+          </div>
+
+          <!-- App 4: CryptoVault Studio -->
+          <div class="app-card" data-app-id="crypto-vault" data-category="crypto" data-filename="crypto-vault.html" data-title="CryptoVault Studio" data-tags="crypto cryptography sha256 sha512 hash aes gcm cipher diceware passphrase privacy secret security">
+            <div>
+              <div class="app-badge-row">
+                <span class="app-pill pill-cyan">CRYPTO STUDIO</span>
+                <span class="file-size">70.1 KB · HTML</span>
+              </div>
+              <div class="app-name">CryptoVault Studio</div>
+              <div class="app-desc">Hardware-accelerated W3C Web Crypto suite. Compute multi-file SHA-256/SHA-512 hashes, encrypt files and messages client-side with AES-256-GCM, and generate cryptographically secure Diceware passphrases.</div>
+              <ul class="app-features">
+                <li>Multi-algorithm SHA-256, SHA-384, SHA-512 chunked file hashing</li>
+                <li>Zero-knowledge AES-256-GCM encryption with PBKDF2 derivation</li>
+                <li>Cryptographic Diceware passphrase and token generator</li>
+                <li>Strict client-side memory handling with no external leaks</li>
+              </ul>
+            </div>
+            <div class="app-actions">
+              <button type="button" class="btn btn-acid" onclick="openPreview('crypto-vault.html', 'CryptoVault Studio — Hardware-Accelerated Web Crypto')">🚀 Launch Studio</button>
+              <a href="crypto-vault.html" download="crypto-vault.html" class="btn btn-outline">📥 Download</a>
+            </div>
+          </div>
+
+          <!-- App 5: DataForge Transformer -->
+          <div class="app-card" data-app-id="data-forge" data-category="utilities" data-filename="data-forge.html" data-title="DataForge Transformer" data-tags="data utilities json csv yaml markdown base64 hex jwt formatter converter inspector workbench">
+            <div>
+              <div class="app-badge-row">
+                <span class="app-pill pill-amber">DATA WORKBENCH</span>
+                <span class="file-size">71.4 KB · HTML</span>
+              </div>
+              <div class="app-name">DataForge Transformer</div>
+              <div class="app-desc">Zero-dependency client-side data conversion and formatting workbench. Transform bidirectional JSON, CSV, and YAML, convert Base64 and Hex, and inspect/decode JWT tokens offline.</div>
+              <ul class="app-features">
+                <li>Bidirectional JSON, CSV, and YAML schema-aware transformer</li>
+                <li>CSV to formatted GitHub-flavored Markdown table converter</li>
+                <li>Offline JWT header, payload, and claims inspector</li>
+                <li>Binary Hex & Base64 encoder/decoder with file drop support</li>
+              </ul>
+            </div>
+            <div class="app-actions">
+              <button type="button" class="btn btn-acid" onclick="openPreview('data-forge.html', 'DataForge Transformer — Offline Data Workbench')">🚀 Launch Workbench</button>
+              <a href="data-forge.html" download="data-forge.html" class="btn btn-outline">📥 Download</a>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <!-- Live Preview Modal -->
-    <div class="modal-backdrop" id="previewModal">
+    <div class="modal-backdrop" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-frame">
         <div class="modal-header">
           <div class="modal-title" id="modalTitle">Application Preview</div>
           <div style="display: flex; gap: 12px; align-items: center;">
             <a href="#" id="modalDirectLink" target="_blank" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;">Open Fullscreen ↗</a>
-            <button class="modal-close" onclick="closePreview()">&times;</button>
+            <button type="button" class="modal-close" aria-label="Close application preview" onclick="closePreview()">&times;</button>
           </div>
         </div>
-        <iframe id="modalIframe" class="modal-iframe" src=""></iframe>
+        <iframe id="modalIframe" class="modal-iframe" src="" sandbox="allow-scripts allow-same-origin allow-downloads allow-forms" title="Application Preview Runner"></iframe>
       </div>
     </div>
 
@@ -585,22 +791,117 @@
   </div>
 
   <script>
+    let previouslyFocusedElement = null;
+
     function openPreview(url, title) {
+      previouslyFocusedElement = document.activeElement;
+      const modal = document.getElementById('previewModal');
+      const iframe = document.getElementById('modalIframe');
       document.getElementById('modalTitle').textContent = title;
-      document.getElementById('modalIframe').src = url;
+      if (iframe) {
+        iframe.src = url;
+        iframe.title = title;
+        iframe.setAttribute('title', title);
+      }
       document.getElementById('modalDirectLink').href = url;
-      document.getElementById('previewModal').classList.add('active');
+      modal.classList.add('active');
+      const closeBtn = modal.querySelector('.modal-close');
+      if (closeBtn) closeBtn.focus();
     }
 
     function closePreview() {
-      document.getElementById('modalIframe').src = '';
-      document.getElementById('previewModal').classList.remove('active');
+      const modal = document.getElementById('previewModal');
+      const iframe = document.getElementById('modalIframe');
+      if (iframe) {
+        iframe.src = '';
+      }
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      if (previouslyFocusedElement && typeof previouslyFocusedElement.focus === 'function') {
+        previouslyFocusedElement.focus();
+      }
     }
 
-    // Close modal on Escape
+    // Modal backdrop click handler (ignore clicks inside .modal-frame)
+    const modalEl = document.getElementById('previewModal');
+    if (modalEl) {
+      modalEl.addEventListener('click', (e) => {
+        if (e.target === modalEl) {
+          closePreview();
+        }
+      });
+    }
+
+    // Escape key handler
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePreview();
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        closePreview();
+      }
     });
+
+    // Filter and Search System
+    let selectedCategory = 'all';
+    const searchInput = document.getElementById('search');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const cards = Array.from(document.querySelectorAll('.app-card'));
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    const liveRegion = document.getElementById('searchResultsLive');
+
+    function filterCategory(cat) {
+      selectedCategory = cat.toLowerCase();
+      filterChips.forEach(chip => {
+        const chipCat = (chip.getAttribute('data-filter') || '').toLowerCase();
+        const isActive = chipCat === selectedCategory;
+        chip.classList.toggle('active', isActive);
+        chip.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+      applyFilters();
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterCategory(chip.getAttribute('data-filter') || 'all');
+      });
+    });
+
+    function applyFilters() {
+      const rawQuery = (searchInput ? searchInput.value : '').trim().toLowerCase();
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cat = (card.getAttribute('data-category') || card.dataset.category || '').toLowerCase();
+        const title = (card.getAttribute('data-title') || card.dataset.title || '').toLowerCase();
+        const tags = (card.getAttribute('data-tags') || card.dataset.tags || '').toLowerCase();
+        const content = card.textContent.toLowerCase();
+
+        const matchesCategory = selectedCategory === 'all' || cat === selectedCategory || cat.includes(selectedCategory);
+
+        let matchesSearch = true;
+        if (rawQuery.length > 0) {
+          matchesSearch = title.includes(rawQuery) || tags.includes(rawQuery) || content.includes(rawQuery);
+        }
+
+        const isVisible = matchesCategory && matchesSearch;
+        card.style.display = isVisible ? 'flex' : 'none';
+        if (isVisible) visibleCount++;
+      });
+
+      if (noResultsMsg) {
+        noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      if (liveRegion) {
+        liveRegion.textContent = visibleCount === 0 
+          ? '0 tools found' 
+          : `${visibleCount} tools matching filter`;
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+      searchInput.addEventListener('keyup', applyFilters);
+    }
   </script>
 </body>
 </html>

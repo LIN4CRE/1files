@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DATA://FORGE — Universal Offline Data Transformer</title>
+<meta name="description" content="100% air-gapped zero-dependency data transformer: JSON Studio, RFC 4180 CSV/TSV converter, pure YAML parser, Base64/Hex dumper, offline JWT inspector.">
+<style>
+  /* 100% Zero External Dependencies - System Font Stack Only */
+  :root {
+    --bg: #07080c;
+    --bg2: #101218;
+    --panel: #11141f;
+    --panel2: #151a28;
+    --line: #222938;
+    --line2: #2a344b;
+    --text: #dfe7f2;
+    --muted: #8a96ac;
+    --dim: #5c677b;
+    --acid: #00FF88;
+    --acid-glow: rgba(0, 255, 136, 0.25);
+    --cyan: #00F0FF;
+    --cyan-glow: rgba(0, 240, 255, 0.2);
+    --amber: #FFD600;
+    --red: #FF2E4D;
+    --mag: #FF3DF2;
+    --font-mono: 'JetBrains Mono', 'Share Tech Mono', ui-monospace, Menlo, Consolas, monospace;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius: 6px;
+    --header-h: 56px;
+  }
+
+  body.theme-oled {
+    --bg: #000000;
+    --bg2: #050508;
+    --panel: #0a0a0f;
+    --panel2: #0e0e14;
+    --line: #161720;
+    --line2: #202230;
+  }
+
+  body.theme-light {
+    --bg: #f4f6fa;
+    --bg2: #ffffff;
+    --panel: #ffffff;
+    --panel2: #e9edf5;
+    --line: #cfd8e5;
+    --line2: #b8c4d6;
+    --text: #0e1520;
+    --muted: #475569;
+    --dim: #64748b;
+    --acid: #007a41;
+    --acid-glow: rgba(0, 122, 65, 0.2);
+    --cyan: #006b8f;
+    --amber: #946200;
+    --red: #b91c1c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0.35;
+  }
+  body.theme-light .scanlines { display: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--acid);
+    outline-offset: 2px;
+  }
+
+  /* Header */
+  .forge-header {
+    height: var(--header-h);
+    background: var(--bg2);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .logo-icon { color: var(--acid); font-size: 1.2rem; filter: drop-shadow(0 0 8px var(--acid-glow)); }
+  .logo-title { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.05em; color: #fff; }
+  body.theme-light .logo-title { color: #000; }
+  .logo-title span { color: var(--acid); }
+  .logo-sub { font-size: 0.72rem; color: var(--muted); display: none; }
+  @media (min-width: 900px) { .logo-sub { display: inline-block; } }
+
+  .header-center { display: flex; align-items: center; gap: 10px; }
+  .status-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .status-ready { background: rgba(0, 255, 136, 0.12); color: var(--acid); border: 1px solid var(--acid); }
+  .status-error { background: rgba(255, 46, 77, 0.15); color: var(--red); border: 1px solid var(--red); }
+  .status-info { background: rgba(0, 240, 255, 0.15); color: var(--cyan); border: 1px solid var(--cyan); }
+  .telemetry-detail { font-size: 0.72rem; color: var(--muted); }
+
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  /* Mode Tabs */
+  .mode-tabs {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    overflow-x: auto;
+    padding: 0 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.03); }
+  .tab-btn.active {
+    color: var(--acid);
+    border-bottom-color: var(--acid);
+    background: rgba(0, 255, 136, 0.05);
+  }
+  .tab-num {
+    font-size: 0.65rem;
+    background: var(--line);
+    color: var(--text);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* Workbench Panes */
+  .workbench-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panes-wrapper {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: hidden;
+  }
+  @media (min-width: 800px) {
+    .panes-wrapper { grid-template-columns: 1fr 1fr; }
+  }
+
+  .pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .pane-input { border-right: 1px solid var(--line); }
+
+  .pane-header {
+    height: 40px;
+    background: var(--panel2);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex-shrink: 0;
+  }
+  .pane-title-group { display: flex; align-items: center; gap: 8px; }
+  .pane-tag { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; color: var(--dim); }
+  .format-pill {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--line);
+    color: var(--cyan);
+  }
+  .pane-actions { display: flex; align-items: center; gap: 6px; }
+
+  /* Editor Areas */
+  .drop-zone {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone.dragover { outline: 2px dashed var(--acid); background: rgba(0, 255, 136, 0.05); }
+
+  .code-editor {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 12px;
+    resize: none;
+    outline: none;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+  }
+
+  /* Toolbars */
+  .mode-toolbar-container {
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    padding: 8px 12px;
+    flex-shrink: 0;
+  }
+  .toolbar-sub { display: none; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .toolbar-sub.active { display: flex; }
+
+  /* Buttons */
+  .btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid var(--line2);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+    background: var(--panel2);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .btn:hover { background: var(--line); color: #fff; }
+  body.theme-light .btn:hover { color: #000; }
+  .btn-acid { background: var(--acid); color: #000 !important; border-color: var(--acid); font-weight: 700; }
+  .btn-acid:hover { background: #15ff93; filter: drop-shadow(0 0 6px var(--acid-glow)); }
+  .btn-cyan { background: rgba(0, 240, 255, 0.12); color: var(--cyan); border-color: var(--cyan); }
+  .btn-cyan:hover { background: var(--cyan); color: #000 !important; }
+  .btn-amber { background: rgba(255, 214, 0, 0.12); color: var(--amber); border-color: var(--amber); }
+  .btn-amber:hover { background: var(--amber); color: #000 !important; }
+  .btn-danger { background: rgba(255, 46, 77, 0.12); color: var(--red); border-color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: #fff !important; }
+  .btn-ghost { background: transparent; border-color: transparent; }
+  .btn-ghost:hover { background: var(--panel); }
+  .btn-outline { background: transparent; border-color: var(--line2); }
+  .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn-xs { font-size: 0.7rem; padding: 2px 7px; }
+  .btn-sm { font-size: 0.75rem; padding: 4px 8px; }
+  .btn-tab.active { background: var(--cyan); color: #000 !important; font-weight: 700; }
+
+  .form-select {
+    background: var(--bg);
+    border: 1px solid var(--line2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .select-label { font-size: 0.72rem; color: var(--muted); }
+
+  /* Output Views Stack */
+  .output-content-stack {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+  }
+  .hidden { display: none !important; }
+
+  /* Interactive DOM Tree Viewer */
+  .tree-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 12px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .tree-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .tree-root { font-size: 13px; line-height: 1.7; }
+  .tree-node { margin-left: 16px; position: relative; }
+  .tree-node-root { margin-left: 0; }
+  .tree-toggle {
+    cursor: pointer;
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    color: var(--acid);
+    user-select: none;
+    font-size: 0.65rem;
+    margin-right: 4px;
+  }
+  .tree-key { color: var(--cyan); font-weight: 600; cursor: pointer; }
+  .tree-key:hover { text-decoration: underline; }
+  .tree-val-string { color: var(--acid); }
+  .tree-val-number { color: var(--amber); }
+  .tree-val-boolean { color: var(--mag); }
+  .tree-val-null { color: var(--dim); font-style: italic; }
+  .tree-bracket { color: var(--dim); }
+  .tree-meta { font-size: 0.7rem; color: var(--muted); margin-left: 6px; }
+
+  /* JWT Visualizer Card */
+  .jwt-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 16px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .jwt-status-banner {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .jwt-valid { background: rgba(0, 255, 136, 0.15); border: 1px solid var(--acid); color: var(--acid); }
+  .jwt-expired { background: rgba(255, 46, 77, 0.15); border: 1px solid var(--red); color: var(--red); }
+  .jwt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .jwt-grid { grid-template-columns: 1fr; } }
+  .jwt-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  .jwt-card-header { font-size: 0.72rem; font-weight: 800; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.05em; }
+  .code-box {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    overflow: auto;
+  }
+  .claims-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .claims-table th, .claims-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); }
+  .claims-table th { color: var(--dim); font-size: 0.7rem; }
+  .claim-name { color: var(--cyan); font-weight: 600; }
+  .sig-box { font-size: 11px; word-break: break-all; color: var(--dim); background: var(--bg2); padding: 8px; border-radius: 4px; }
+
+  /* Output Footer */
+  .output-footer {
+    height: 28px;
+    background: var(--bg2);
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 0.7rem;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  /* Shortcuts Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-frame {
+    background: var(--panel);
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    width: min(520px, 90%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 0.95rem; font-weight: 700; color: #fff; }
+  body.theme-light .modal-title { color: #000; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+  .modal-close:hover { color: #fff; }
+  .modal-body { padding: 16px; overflow-y: auto; }
+  .shortcuts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .shortcuts-table th, .shortcuts-table td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  kbd { background: var(--line); color: var(--text); padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+</style>
+
+<div class="scanlines" aria-hidden="true"></div>
+
+<!-- Header -->
+<header class="forge-header" role="banner">
+  <div class="header-left">
+    <span class="logo-icon" aria-hidden="true">⚡</span>
+    <h1 class="logo-title">DATA<span>://FORGE</span></h1>
+    <span class="logo-sub">// UNIVERSAL OFFLINE DATA WORKBENCH</span>
+  </div>
+  <div class="header-center">
+    <div id="statusBadge" class="status-badge status-ready" role="status" aria-live="polite">READY</div>
+    <div id="telemetryDetail" class="telemetry-detail">UTF-8 · 0 bytes</div>
+  </div>
+  <div class="header-right">
+    <button type="button" class="btn btn-sm btn-ghost" id="themeBtn" aria-label="Toggle visual theme" title="Switch Theme (Alt+T)">🎨 Cyber</button>
+    <button type="button" class="btn btn-sm btn-ghost" id="helpBtn" aria-label="Keyboard shortcuts" title="Keyboard Shortcuts (?)">⌨️ Shortcuts</button>
+  </div>
+</header>
+
+<!-- Main Container -->
+<main class="workbench-container" role="main">
+  <!-- Mode Selection Toolbar -->
+  <nav class="mode-tabs" role="tablist" aria-label="Transformation Modes">
+    <button type="button" role="tab" class="tab-btn active" id="tab-json" aria-selected="true" data-mode="json">
+      <span class="tab-num">1</span> JSON Studio
+    </button>
+    <button type="button" role="tab" class="tab-btn" id="tab-csv" aria-selected="false" data-mode="csv">
+      <span class="tab-num">2</span> CSV / TSV ⇄ JSON
+    </button>
+    <button type="button" role="tab" class="tab-btn" id="tab-yaml" aria-selected="false" data-mode="yaml">
+      <span class="tab-num">3</span> YAML ⇄ JSON
+    </button>
+    <button type="button" role="tab" class="tab-btn" id="tab-base64" aria-selected="false" data-mode="base64">
+      <span class="tab-num">4</span> Base64 / Base64URL
+    </button>
+    <button type="button" role="tab" class="tab-btn" id="tab-hex" aria-selected="false" data-mode="hex">
+      <span class="tab-num">5</span> Hex Dumper
+    </button>
+    <button type="button" role="tab" class="tab-btn" id="tab-jwt" aria-selected="false" data-mode="jwt">
+      <span class="tab-num">6</span> JWT Inspector
+    </button>
+  </nav>
+
+  <!-- Dual Workbench Panes -->
+  <div class="panes-wrapper">
+    <!-- LEFT PANE: INPUT -->
+    <section class="pane pane-input" aria-label="Source Input Pane">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-tag">INPUT</span>
+          <span id="inputFormatLabel" class="format-pill">AUTO</span>
+        </div>
+        <div class="pane-actions">
+          <input type="file" id="filePicker" class="sr-only" aria-label="Ingest local file">
+          <button type="button" class="btn btn-xs btn-outline" id="loadSampleBtn" title="Load sample dataset">Sample</button>
+          <button type="button" class="btn btn-xs btn-outline" id="filePickBtn" title="Load file from disk">📂 Open</button>
+          <button type="button" class="btn btn-xs btn-outline" id="pasteBtn" title="Paste from clipboard">📋 Paste</button>
+          <button type="button" class="btn btn-xs btn-danger" id="clearBtn" title="Clear input editor">🧹 Clear</button>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Zone / Editor -->
+      <div id="dropZone" class="drop-zone" tabindex="0" role="region" aria-label="Drop file here">
+        <textarea id="inputEditor" class="code-editor" spellcheck="false" placeholder="Paste data here or drag and drop any file..."></textarea>
+      </div>
+
+      <!-- Mode Toolbars -->
+      <div class="mode-toolbar-container">
+        <!-- JSON Toolbar -->
+        <div class="toolbar-sub active" id="tb-json">
+          <button type="button" class="btn btn-sm btn-acid" id="jsonFmt2">Format (2-sp)</button>
+          <button type="button" class="btn btn-sm btn-outline" id="jsonFmt4">Format (4-sp)</button>
+          <button type="button" class="btn btn-sm btn-outline" id="jsonFmtTab">Tabs</button>
+          <button type="button" class="btn btn-sm btn-outline" id="jsonMinify">Minify</button>
+          <button type="button" class="btn btn-sm btn-cyan" id="jsonSort">Sort Keys A-Z</button>
+          <button type="button" class="btn btn-sm btn-outline" id="jsonViewTree">🌳 Tree View</button>
+        </div>
+        <!-- CSV Toolbar -->
+        <div class="toolbar-sub" id="tb-csv">
+          <label class="select-label" for="csvDelimSelect">Delimiter:</label>
+          <select id="csvDelimSelect" class="form-select">
+            <option value="auto">Auto-Detect</option>
+            <option value=",">Comma (,)</option>
+            <option value="&#9;">Tab (\t)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="|">Pipe (|)</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-acid" id="csvToJsonBtn">CSV → JSON</button>
+          <button type="button" class="btn btn-sm btn-cyan" id="jsonToCsvBtn">JSON → CSV</button>
+          <button type="button" class="btn btn-sm btn-amber" id="csvToMdBtn">📊 To Markdown Table</button>
+        </div>
+        <!-- YAML Toolbar -->
+        <div class="toolbar-sub" id="tb-yaml">
+          <button type="button" class="btn btn-sm btn-acid" id="yamlToJsonBtn">YAML → JSON</button>
+          <button type="button" class="btn btn-sm btn-cyan" id="jsonToYamlBtn">JSON → YAML</button>
+          <button type="button" class="btn btn-sm btn-outline" id="yamlBeautifyBtn">Re-indent YAML</button>
+        </div>
+        <!-- Base64 Toolbar -->
+        <div class="toolbar-sub" id="tb-base64">
+          <button type="button" class="btn btn-sm btn-acid" id="b64EncodeBtn">Encode Base64</button>
+          <button type="button" class="btn btn-sm btn-cyan" id="b64DecodeBtn">Decode Base64</button>
+          <button type="button" class="btn btn-sm btn-outline" id="b64UrlEncodeBtn">Encode Base64URL</button>
+          <button type="button" class="btn btn-sm btn-outline" id="b64UrlDecodeBtn">Decode Base64URL</button>
+        </div>
+        <!-- Hex Toolbar -->
+        <div class="toolbar-sub" id="tb-hex">
+          <button type="button" class="btn btn-sm btn-acid" id="textToHexBtn">Text → Hex Dump</button>
+          <button type="button" class="btn btn-sm btn-cyan" id="hexToTextBtn">Hex Dump → Text</button>
+          <button type="button" class="btn btn-sm btn-outline" id="hexStreamBtn">Compact Hex</button>
+        </div>
+        <!-- JWT Toolbar -->
+        <div class="toolbar-sub" id="tb-jwt">
+          <button type="button" class="btn btn-sm btn-acid" id="jwtInspectBtn">🔍 Inspect JWT Token</button>
+          <button type="button" class="btn btn-sm btn-outline" id="jwtSampleBtn">Load Sample Token</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: OUTPUT -->
+    <section class="pane pane-output" aria-label="Transformation Output Pane">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-tag">OUTPUT</span>
+          <div class="output-views-toggle" role="group" aria-label="Output view mode">
+            <button type="button" class="btn btn-xs btn-tab active" id="viewRawBtn">Raw Editor</button>
+            <button type="button" class="btn btn-xs btn-tab" id="viewTreeBtn">DOM Tree</button>
+            <button type="button" class="btn btn-xs btn-tab" id="viewJwtBtn" style="display:none">JWT Card</button>
+          </div>
+        </div>
+        <div class="pane-actions">
+          <button type="button" class="btn btn-xs btn-acid" id="copyOutBtn" title="Copy output">📋 Copy</button>
+          <button type="button" class="btn btn-xs btn-outline" id="downloadOutBtn" title="Download output file">💾 Download</button>
+          <button type="button" class="btn btn-xs btn-cyan" id="swapIoBtn" title="Swap output into input">🔀 Swap I/O</button>
+        </div>
+      </div>
+
+      <!-- Output Display Stack -->
+      <div class="output-content-stack">
+        <!-- 1. Raw Text Output -->
+        <textarea id="outputEditor" class="code-editor" readonly spellcheck="false" placeholder="Transformed output will appear here..."></textarea>
+        
+        <!-- 2. Interactive DOM Tree Viewer -->
+        <div id="treeViewer" class="tree-container hidden" role="tree" aria-label="JSON Interactive Tree">
+          <div class="tree-toolbar">
+            <button type="button" class="btn btn-xs btn-outline" id="treeExpandAll">Expand All</button>
+            <button type="button" class="btn btn-xs btn-outline" id="treeCollapseAll">Collapse All</button>
+            <span id="treeMeta" class="tree-meta">0 nodes</span>
+          </div>
+          <div id="treeRoot" class="tree-root"></div>
+        </div>
+
+        <!-- 3. Offline JWT Visualizer -->
+        <div id="jwtViewer" class="jwt-container hidden" role="region" aria-label="JWT Claims Card">
+          <div id="jwtStatusBanner" class="jwt-status-banner"></div>
+          <div class="jwt-grid">
+            <div class="jwt-card">
+              <div class="jwt-card-header">HEADER (Algorithm & Type)</div>
+              <pre id="jwtHeaderPre" class="code-box"></pre>
+            </div>
+            <div class="jwt-card">
+              <div class="jwt-card-header">PAYLOAD (Data Claims)</div>
+              <pre id="jwtPayloadPre" class="code-box"></pre>
+            </div>
+          </div>
+          <div class="jwt-card">
+            <div class="jwt-card-header">CLAIMS TELEMETRY & LIFETIME</div>
+            <div id="jwtClaimsTable" class="claims-table-wrap"></div>
+          </div>
+          <div class="jwt-card">
+            <div class="jwt-card-header">SIGNATURE HASH</div>
+            <div id="jwtSigBox" class="sig-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output Telemetry Footer -->
+      <div class="output-footer">
+        <span id="outputMetrics">0 chars · 0 lines · 0 bytes</span>
+        <span id="transformTiming">0.0 ms</span>
+      </div>
+    </section>
+  </div>
+<!-- end wrap -->
+
+<!-- Help / Keyboard Shortcuts Modal -->
+<div class="modal-backdrop" id="shortcutsModal" role="presentation" hidden>
+  <div class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+    <div class="modal-header">
+      <h2 class="modal-title" id="shortcutsModalTitle">Keyboard Shortcuts</h2>
+      <button type="button" class="modal-close" id="closeShortcutsBtn" aria-label="Close shortcuts modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <table class="shortcuts-table">
+        <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Enter</kbd></td><td>Execute Active Transformation</td></tr>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td><td>Beautify / Format (2 Spaces)</td></tr>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd></td><td>Minify Data</td></tr>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd></td><td>Copy Output to Clipboard</td></tr>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Alt</kbd> + <kbd>S</kbd></td><td>Swap Output into Input</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>1</kbd> .. <kbd>6</kbd></td><td>Switch Mode (JSON, CSV, YAML, Base64, Hex, JWT)</td></tr>
+          <tr><td><kbd>?</kbd></td><td>Toggle this Shortcuts Modal</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Close Modals / Overlays</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     DEFENSIVE STORAGE LAYER (F24)
+     ========================================================================== */
+  const Storage = {
+    _mem: {},
+    get(k) { try { return localStorage.getItem(k); } catch(e) { return this._mem[k] ?? null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch(e) { this._mem[k] = String(v); } },
+    remove(k) { try { localStorage.removeItem(k); } catch(e) { delete this._mem[k]; } }
+  };
+
+  /* ==========================================================================
+     MODULE 1: JSON STUDIO ENGINE (F19)
+     ========================================================================== */
+  const JsonStudio = {
+    format(inputStr, indent = 2) {
+      const parsed = JSON.parse(inputStr);
+      return JSON.stringify(parsed, null, indent);
+    },
+
+    minify(inputStr) {
+      const parsed = JSON.parse(inputStr);
+      return JSON.stringify(parsed);
+    },
+
+    sortKeysAlphabetically(inputStr, indent = 2) {
+      const parsed = JSON.parse(inputStr);
+      const sorted = this._sortDeep(parsed);
+      return JSON.stringify(sorted, null, indent);
+    },
+
+    _sortDeep(value) {
+      if (Array.isArray(value)) {
+        return value.map(item => this._sortDeep(item));
+      } else if (value !== null && typeof value === 'object') {
+        const sortedObj = {};
+        const sortedKeys = Object.keys(value).sort((a, b) => a.localeCompare(b));
+        for (const k of sortedKeys) {
+          sortedObj[k] = this._sortDeep(value[k]);
+        }
+        return sortedObj;
+      }
+      return value;
+    },
+
+    parseWithErrorTelemetry(inputStr) {
+      try {
+        const data = JSON.parse(inputStr);
+        return { ok: true, data };
+      } catch (err) {
+        let line = 1, col = 1;
+        const posMatch = err.message.match(/position\s+(\d+)/i);
+        if (posMatch) {
+          const pos = parseInt(posMatch[1], 10);
+          const sub = inputStr.slice(0, pos);
+          const lines = sub.split('\n');
+          line = lines.length;
+          col = lines[lines.length - 1].length + 1;
+        }
+        return { ok: false, error: err.message, line, col };
+      }
+    },
+
+    renderDOMTree(data, rootElem) {
+      rootElem.innerHTML = '';
+      let nodeCount = 0;
+
+      function createNode(key, val, isLast) {
+        nodeCount++;
+        const node = document.createElement('div');
+        node.className = 'tree-node';
+
+        const type = Array.isArray(val) ? 'array' : (val === null ? 'null' : typeof val);
+
+        if (type === 'object' || type === 'array') {
+          const isArr = type === 'array';
+          const keys = Object.keys(val);
+          const openChar = isArr ? '[' : '{';
+          const closeChar = isArr ? ']' : '}';
+
+          const line = document.createElement('div');
+          const toggle = document.createElement('span');
+          toggle.className = 'tree-toggle';
+          toggle.textContent = '▼';
+          toggle.setAttribute('role', 'button');
+          toggle.setAttribute('aria-expanded', 'true');
+          line.appendChild(toggle);
+
+          if (key !== null) {
+            const keySpan = document.createElement('span');
+            keySpan.className = 'tree-key';
+            keySpan.textContent = `"${key}": `;
+            line.appendChild(keySpan);
+          }
+
+          const openSpan = document.createElement('span');
+          openSpan.className = 'tree-bracket';
+          openSpan.textContent = openChar;
+          line.appendChild(openSpan);
+
+          const countSpan = document.createElement('span');
+          countSpan.className = 'tree-meta';
+          countSpan.textContent = `${keys.length} ${isArr ? 'items' : 'keys'}`;
+          line.appendChild(countSpan);
+
+          node.appendChild(line);
+
+          const childrenWrap = document.createElement('div');
+          childrenWrap.className = 'tree-children';
+
+          keys.forEach((k, idx) => {
+            const childNode = createNode(isArr ? null : k, val[k], idx === keys.length - 1);
+            childrenWrap.appendChild(childNode);
+          });
+
+          node.appendChild(childrenWrap);
+
+          const closeLine = document.createElement('div');
+          const closeSpan = document.createElement('span');
+          closeSpan.className = 'tree-bracket';
+          closeSpan.textContent = closeChar + (isLast ? '' : ',');
+          closeLine.appendChild(closeSpan);
+          node.appendChild(closeLine);
+
+          toggle.addEventListener('click', () => {
+            const isCollapsed = childrenWrap.style.display === 'none';
+            childrenWrap.style.display = isCollapsed ? 'block' : 'none';
+            closeLine.style.display = isCollapsed ? 'block' : 'none';
+            toggle.textContent = isCollapsed ? '▼' : '▶';
+            toggle.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+          });
+
+        } else {
+          const line = document.createElement('div');
+          if (key !== null) {
+            const keySpan = document.createElement('span');
+            keySpan.className = 'tree-key';
+            keySpan.textContent = `"${key}": `;
+            line.appendChild(keySpan);
+          }
+
+          const valSpan = document.createElement('span');
+          valSpan.className = `tree-val tree-val-${type}`;
+          if (type === 'string') {
+            valSpan.textContent = `"${val}"`;
+          } else {
+            valSpan.textContent = String(val);
+          }
+          line.appendChild(valSpan);
+
+          if (!isLast) {
+            const comma = document.createElement('span');
+            comma.className = 'tree-bracket';
+            comma.textContent = ',';
+            line.appendChild(comma);
+          }
+
+          node.appendChild(line);
+        }
+
+        return node;
+      }
+
+      const tree = createNode(null, data, true);
+      tree.classList.add('tree-node-root');
+      rootElem.appendChild(tree);
+      return nodeCount;
+    }
+  };
+
+  /* ==========================================================================
+     MODULE 2: RFC 4180 CSV / TSV CONVERTER (F20)
+     ========================================================================== */
+  const CsvEngine = {
+    detectDelimiter(text) {
+      const candidates = [',', '\t', ';', '|'];
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).slice(0, 5);
+      if (lines.length === 0) return ',';
+
+      let bestDelim = ',';
+      let maxScore = -1;
+
+      for (const delim of candidates) {
+        let counts = lines.map(line => {
+          let count = 0, inQ = false;
+          for (let i = 0; i < line.length; i++) {
+            if (line[i] === '"') inQ = !inQ;
+            else if (line[i] === delim && !inQ) count++;
+          }
+          return count;
+        });
+
+        if (counts[0] > 0 && counts.every(c => c === counts[0])) {
+          const score = counts[0] * 10;
+          if (score > maxScore) { maxScore = score; bestDelim = delim; }
+        } else {
+          const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
+          if (avg > maxScore) { maxScore = avg; bestDelim = delim; }
+        }
+      }
+      return bestDelim;
+    },
+
+    parse(text, delimiter = null) {
+      if (!delimiter || delimiter === 'auto') delimiter = this.detectDelimiter(text);
+      const rows = [];
+      let currentRow = [];
+      let currentField = '';
+      let inQuotes = false;
+      let i = 0;
+      const len = text.length;
+
+      while (i < len) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (inQuotes) {
+          if (char === '"') {
+            if (nextChar === '"') {
+              currentField += '"';
+              i += 2;
+              continue;
+            } else {
+              inQuotes = false;
+              i++;
+              continue;
+            }
+          } else {
+            currentField += char;
+            i++;
+            continue;
+          }
+        } else {
+          if (char === '"') {
+            inQuotes = true;
+            i++;
+            continue;
+          } else if (char === delimiter) {
+            currentRow.push(currentField);
+            currentField = '';
+            i++;
+            continue;
+          } else if (char === '\r') {
+            if (nextChar === '\n') i++;
+            currentRow.push(currentField);
+            currentField = '';
+            rows.push(currentRow);
+            currentRow = [];
+            i++;
+            continue;
+          } else if (char === '\n') {
+            currentRow.push(currentField);
+            currentField = '';
+            rows.push(currentRow);
+            currentRow = [];
+            i++;
+            continue;
+          } else {
+            currentField += char;
+            i++;
+            continue;
+          }
+        }
+      }
+
+      if (currentField.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+      }
+
+      if (rows.length > 1 && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === '') {
+        rows.pop();
+      }
+
+      return { rows, delimiter };
+    },
+
+    toJSON(text, delimiter = null) {
+      const { rows } = this.parse(text, delimiter);
+      if (rows.length === 0) return '[]';
+      const headers = rows[0].map(h => h.trim());
+      const result = [];
+
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (row.length === 1 && row[0] === '') continue;
+        const obj = {};
+        for (let c = 0; c < headers.length; c++) {
+          const key = headers[c] || `col_${c + 1}`;
+          const rawVal = row[c] !== undefined ? row[c] : '';
+          obj[key] = this._autoCast(rawVal);
+        }
+        result.push(obj);
+      }
+      return JSON.stringify(result, null, 2);
+    },
+
+    _autoCast(val) {
+      if (val === '') return '';
+      const lower = val.toLowerCase();
+      if (lower === 'true') return true;
+      if (lower === 'false') return false;
+      if (lower === 'null') return null;
+      if (!isNaN(val) && val.trim() !== '') {
+        const num = Number(val);
+        if (String(num) === val.trim()) return num;
+      }
+      return val;
+    },
+
+    fromJSON(jsonData, delimiter = ',') {
+      let arr = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+      if (!Array.isArray(arr)) {
+        if (typeof arr === 'object' && arr !== null) arr = [arr];
+        else throw new Error('Input must be a JSON array of objects or an object');
+      }
+      if (arr.length === 0) return '';
+
+      const keys = Array.from(new Set(arr.flatMap(o => (o && typeof o === 'object') ? Object.keys(o) : [])));
+
+      const formatField = val => {
+        if (val === null || val === undefined) return '';
+        let s = typeof val === 'object' ? JSON.stringify(val) : String(val);
+        if (s.includes(delimiter) || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+          return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+      };
+
+      const headerLine = keys.map(formatField).join(delimiter);
+      const dataLines = arr.map(obj => keys.map(k => formatField(obj[k])).join(delimiter));
+      return [headerLine, ...dataLines].join('\r\n');
+    },
+
+    toMarkdownTable(text, delimiter = null) {
+      const { rows } = this.parse(text, delimiter);
+      if (rows.length === 0) return '';
+
+      const numCols = Math.max(...rows.map(r => r.length));
+      const normalized = rows.map(r => {
+        const p = [...r];
+        while (p.length < numCols) p.push('');
+        return p;
+      });
+
+      const colWidths = new Array(numCols).fill(3);
+      for (const r of normalized) {
+        r.forEach((cell, idx) => {
+          const clean = cell.replace(/\r?\n/g, '<br>').replace(/\|/g, '\\|');
+          if (clean.length > colWidths[idx]) colWidths[idx] = clean.length;
+        });
+      }
+
+      const pad = (s, len) => s + ' '.repeat(Math.max(0, len - s.length));
+      const header = normalized[0];
+      const headerLine = '| ' + header.map((h, i) => {
+        const s = h.replace(/\r?\n/g, '<br>').replace(/\|/g, '\\|');
+        return pad(s, colWidths[i]);
+      }).join(' | ') + ' |';
+
+      const sepLine = '| ' + colWidths.map(w => ':' + '-'.repeat(Math.max(2, w - 1))).join(' | ') + ' |';
+
+      const dataLines = normalized.slice(1).map(row => {
+        return '| ' + row.map((cell, i) => {
+          const s = cell.replace(/\r?\n/g, '<br>').replace(/\|/g, '\\|');
+          return pad(s, colWidths[i]);
+        }).join(' | ') + ' |';
+      });
+
+      return [headerLine, sepLine, ...dataLines].join('\n');
+    }
+  };
+
+  /* ==========================================================================
+     MODULE 3: PURE VANILLA YAML CONVERTER (F21)
+     ========================================================================== */
+  const YamlEngine = {
+    parse(yamlText) {
+      const lines = yamlText.split(/\r?\n/);
+      let lineIdx = 0;
+
+      const parseScalar = val => {
+        if (val === undefined || val === null) return null;
+        val = val.trim();
+        if (val === '' || val === '~' || /^null$/i.test(val)) return null;
+        if (/^(true|yes|on)$/i.test(val)) return true;
+        if (/^(false|no|off)$/i.test(val)) return false;
+
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          const quote = val[0];
+          const inner = val.slice(1, -1);
+          return quote === '"'
+            ? inner.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+            : inner.replace(/''/g, "'");
+        }
+
+        if (/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(val)) {
+          const num = Number(val);
+          if (!isNaN(num)) return num;
+        }
+        return val;
+      };
+
+      const parsedLines = [];
+      for (const rawLine of lines) {
+        const indentMatch = rawLine.match(/^(\s*)/);
+        const indent = indentMatch ? indentMatch[1].length : 0;
+        let clean = '';
+        let inD = false, inS = false;
+        for (let i = 0; i < rawLine.length; i++) {
+          const c = rawLine[i];
+          if (c === '"' && !inS) inD = !inD;
+          else if (c === "'" && !inD) inS = !inS;
+          else if (c === '#' && !inD && !inS) break;
+          clean += c;
+        }
+        clean = clean.trim();
+        if (clean) parsedLines.push({ indent, content: clean });
+      }
+
+      if (parsedLines.length === 0) return null;
+
+      const findColon = str => {
+        let inD = false, inS = false;
+        for (let i = 0; i < str.length; i++) {
+          const c = str[i];
+          if (c === '"' && !inS) inD = !inD;
+          else if (c === "'" && !inD) inS = !inS;
+          else if (c === ':' && !inD && !inS) {
+            if (i === str.length - 1 || str[i + 1] === ' ') return i;
+          }
+        }
+        return -1;
+      };
+
+      const parseBlock = minIndent => {
+        if (lineIdx >= parsedLines.length) return null;
+        const currentLine = parsedLines[lineIdx];
+        if (currentLine.indent < minIndent) return null;
+        const currentIndent = currentLine.indent;
+
+        if (currentLine.content.startsWith('- ') || currentLine.content === '-') {
+          const arr = [];
+          while (lineIdx < parsedLines.length) {
+            const itemLine = parsedLines[lineIdx];
+            if (itemLine.indent < currentIndent) break;
+            if (itemLine.indent > currentIndent) break;
+            if (!itemLine.content.startsWith('- ') && itemLine.content !== '-') break;
+
+            const itemContent = itemLine.content.slice(1).trim();
+            lineIdx++;
+
+            if (itemContent === '') {
+              if (lineIdx < parsedLines.length && parsedLines[lineIdx].indent > currentIndent) {
+                arr.push(parseBlock(parsedLines[lineIdx].indent));
+              } else {
+                arr.push(null);
+              }
+            } else {
+              const colonIdx = findColon(itemContent);
+              if (colonIdx !== -1) {
+                const k = itemContent.slice(0, colonIdx).trim().replace(/^["']|["']$/g, '');
+                const rest = itemContent.slice(colonIdx + 1).trim();
+                const obj = {};
+                if (rest === '') {
+                  obj[k] = (lineIdx < parsedLines.length && parsedLines[lineIdx].indent > currentIndent)
+                    ? parseBlock(parsedLines[lineIdx].indent) : null;
+                } else {
+                  obj[k] = parseScalar(rest);
+                }
+                const subIndent = itemLine.indent + 2;
+                while (lineIdx < parsedLines.length && parsedLines[lineIdx].indent >= subIndent) {
+                  const subLine = parsedLines[lineIdx];
+                  if (subLine.content.startsWith('- ')) break;
+                  const subColon = findColon(subLine.content);
+                  if (subColon !== -1) {
+                    const subK = subLine.content.slice(0, subColon).trim().replace(/^["']|["']$/g, '');
+                    const subRest = subLine.content.slice(subColon + 1).trim();
+                    lineIdx++;
+                    obj[subK] = (subRest === '')
+                      ? ((lineIdx < parsedLines.length && parsedLines[lineIdx].indent > subLine.indent)
+                          ? parseBlock(parsedLines[lineIdx].indent) : null)
+                      : parseScalar(subRest);
+                  } else break;
+                }
+                arr.push(obj);
+              } else {
+                arr.push(parseScalar(itemContent));
+              }
+            }
+          }
+          return arr;
+        } else {
+          const obj = {};
+          while (lineIdx < parsedLines.length) {
+            const itemLine = parsedLines[lineIdx];
+            if (itemLine.indent < currentIndent) break;
+            if (itemLine.indent > currentIndent) break;
+
+            const colonIdx = findColon(itemLine.content);
+            if (colonIdx === -1) {
+              lineIdx++;
+              return parseScalar(itemLine.content);
+            }
+
+            const k = itemLine.content.slice(0, colonIdx).trim().replace(/^["']|["']$/g, '');
+            const rest = itemLine.content.slice(colonIdx + 1).trim();
+            lineIdx++;
+
+            if (rest === '') {
+              obj[k] = (lineIdx < parsedLines.length && parsedLines[lineIdx].indent > currentIndent)
+                ? parseBlock(parsedLines[lineIdx].indent) : null;
+            } else {
+              obj[k] = parseScalar(rest);
+            }
+          }
+          return obj;
+        }
+      };
+
+      return parseBlock(0);
+    },
+
+    stringify(data, indentLevel = 0) {
+      const indent = '  '.repeat(indentLevel);
+
+      const needsQuotes = str => {
+        if (typeof str !== 'string') return false;
+        if (str === '') return true;
+        if (/[\n\r:#\[\]\{\},&*\?!|><%@`]/.test(str)) return true;
+        if (/^\s|\s$/.test(str)) return true;
+        if (/^(true|false|null|yes|no|on|off|~)$/i.test(str)) return true;
+        if (!isNaN(str) && str.trim() !== '') return true;
+        if (str.startsWith('- ') || str.startsWith('---')) return true;
+        return false;
+      };
+
+      const formatScalar = val => {
+        if (val === null || val === undefined) return 'null';
+        if (typeof val === 'boolean') return val ? 'true' : 'false';
+        if (typeof val === 'number') return String(val);
+        if (typeof val === 'string') return needsQuotes(val) ? JSON.stringify(val) : val;
+        return JSON.stringify(val);
+      };
+
+      if (data === null || data === undefined) return 'null';
+      if (typeof data !== 'object') return formatScalar(data);
+
+      if (Array.isArray(data)) {
+        if (data.length === 0) return '[]';
+        const lines = [];
+        for (const item of data) {
+          if (item !== null && typeof item === 'object' && !Array.isArray(item)) {
+            const sub = this.stringify(item, indentLevel + 1).split('\n');
+            lines.push(`${indent}- ${sub[0].trim()}`);
+            for (let j = 1; j < sub.length; j++) lines.push(`${indent}  ${sub[j].trim()}`);
+          } else if (Array.isArray(item)) {
+            lines.push(`${indent}-`);
+            lines.push(this.stringify(item, indentLevel + 1));
+          } else {
+            lines.push(`${indent}- ${formatScalar(item)}`);
+          }
+        }
+        return lines.join('\n');
+      }
+
+      const keys = Object.keys(data);
+      if (keys.length === 0) return '{}';
+      const lines = [];
+      for (const k of keys) {
+        const val = data[k];
+        const keyStr = needsQuotes(k) ? JSON.stringify(k) : k;
+        if (val !== null && typeof val === 'object') {
+          if (Array.isArray(val) && val.length === 0) lines.push(`${indent}${keyStr}: []`);
+          else if (!Array.isArray(val) && Object.keys(val).length === 0) lines.push(`${indent}${keyStr}: {}`);
+          else {
+            lines.push(`${indent}${keyStr}:`);
+            lines.push(this.stringify(val, indentLevel + 1));
+          }
+        } else {
+          lines.push(`${indent}${keyStr}: ${formatScalar(val)}`);
+        }
+      }
+      return lines.join('\n');
+    }
+  };
+
+  /* ==========================================================================
+     MODULE 4: UTF-8 SAFE BASE64 & HEX ENGINE (F22)
+     ========================================================================== */
+  const HexBase64Engine = {
+    encodeBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    },
+
+    decodeBase64(b64) {
+      let normalized = b64.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+      while (normalized.length % 4) normalized += '=';
+      const binary = atob(normalized);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    },
+
+    encodeBase64Url(str) {
+      return this.encodeBase64(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    },
+
+    decodeBase64Url(b64url) {
+      let b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      return this.decodeBase64(b64);
+    },
+
+    dumpHex(input) {
+      let bytes;
+      if (typeof input === 'string') bytes = new TextEncoder().encode(input);
+      else if (input instanceof Uint8Array) bytes = input;
+      else if (input instanceof ArrayBuffer) bytes = new Uint8Array(input);
+      else bytes = new Uint8Array(0);
+
+      const lines = [];
+      const header = 'Offset(h)  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  Decoded Text';
+      lines.push(header);
+      lines.push('-'.repeat(header.length));
+
+      for (let i = 0; i < bytes.length; i += 16) {
+        const chunk = bytes.slice(i, i + 16);
+        const offset = i.toString(16).toUpperCase().padStart(8, '0');
+        const hex1 = [], hex2 = [];
+        let ascii = '';
+
+        for (let j = 0; j < 16; j++) {
+          if (j < chunk.length) {
+            const byte = chunk[j];
+            const hex = byte.toString(16).toUpperCase().padStart(2, '0');
+            if (j < 8) hex1.push(hex);
+            else hex2.push(hex);
+            ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+          } else {
+            if (j < 8) hex1.push('  ');
+            else hex2.push('  ');
+            ascii += ' ';
+          }
+        }
+        lines.push(`${offset}   ${hex1.join(' ').padEnd(23)}  ${hex2.join(' ').padEnd(23)}  ${ascii}`);
+      }
+      return lines.join('\n');
+    },
+
+    fromHex(hexStr) {
+      const clean = hexStr.replace(/(0x|Offset\(h\)|Decoded Text|[^\da-fA-F])/gi, '');
+      if (clean.length % 2 !== 0) throw new Error('Hex string must have an even number of hex digits');
+      const bytes = new Uint8Array(clean.length / 2);
+      for (let i = 0; i < clean.length; i += 2) {
+        bytes[i / 2] = parseInt(clean.slice(i, i + 2), 16);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+  };
+
+  /* ==========================================================================
+     MODULE 5: OFFLINE JWT INSPECTOR (F23)
+     ========================================================================== */
+  const JwtEngine = {
+    inspect(token) {
+      const parts = token.trim().split('.');
+      if (parts.length < 2) {
+        throw new Error('Malformed JWT: Expected at least Header and Payload separated by "."');
+      }
+
+      const [headerB64, payloadB64, sigB64] = parts;
+      let header, payload;
+      try {
+        header = JSON.parse(HexBase64Engine.decodeBase64Url(headerB64));
+      } catch (e) {
+        throw new Error(`Invalid Header Base64URL: ${e.message}`);
+      }
+
+      try {
+        payload = JSON.parse(HexBase64Engine.decodeBase64Url(payloadB64));
+      } catch (e) {
+        throw new Error(`Invalid Payload Base64URL: ${e.message}`);
+      }
+
+      const nowSec = Math.floor(Date.now() / 1000);
+      const claims = [];
+      let expStatus = 'No expiration (exp) claim present';
+      let isExpired = false;
+
+      if (payload.exp !== undefined) {
+        const expDate = new Date(payload.exp * 1000);
+        const delta = payload.exp - nowSec;
+        if (delta < 0) {
+          isExpired = true;
+          expStatus = `EXPIRED ${this._formatDuration(Math.abs(delta))} ago (${expDate.toISOString()})`;
+        } else {
+          isExpired = false;
+          expStatus = `VALID (Expires in ${this._formatDuration(delta)}, ${expDate.toISOString()})`;
+        }
+        claims.push({ claim: 'exp', label: 'Expiration Time', value: payload.exp, desc: expStatus });
+      }
+
+      if (payload.iat !== undefined) {
+        const iatDate = new Date(payload.iat * 1000);
+        const delta = nowSec - payload.iat;
+        const desc = delta >= 0
+          ? `Issued ${this._formatDuration(delta)} ago (${iatDate.toISOString()})`
+          : `Issued in future (${iatDate.toISOString()})`;
+        claims.push({ claim: 'iat', label: 'Issued At', value: payload.iat, desc });
+      }
+
+      if (payload.nbf !== undefined) {
+        const nbfDate = new Date(payload.nbf * 1000);
+        const delta = payload.nbf - nowSec;
+        const desc = delta > 0
+          ? `Inactive (activates in ${this._formatDuration(delta)})`
+          : `Active (${nbfDate.toISOString()})`;
+        claims.push({ claim: 'nbf', label: 'Not Before', value: payload.nbf, desc });
+      }
+
+      const standardLabels = {
+        iss: 'Issuer', sub: 'Subject', aud: 'Audience', jti: 'JWT ID',
+        name: 'Full Name', email: 'Email Address', roles: 'Roles / Authorities', scope: 'Scopes'
+      };
+
+      for (const [k, v] of Object.entries(payload)) {
+        if (['exp', 'iat', 'nbf'].includes(k)) continue;
+        claims.push({
+          claim: k,
+          label: standardLabels[k] || 'Custom Claim',
+          value: typeof v === 'object' ? JSON.stringify(v) : String(v),
+          desc: ''
+        });
+      }
+
+      return {
+        header,
+        payload,
+        signature: sigB64 || 'None',
+        algorithm: header.alg || 'none',
+        type: header.typ || 'JWT',
+        isExpired,
+        expStatus,
+        claims
+      };
+    },
+
+    _formatDuration(sec) {
+      if (sec < 60) return `${sec}s`;
+      const m = Math.floor(sec / 60);
+      if (m < 60) return `${m}m ${sec % 60}s`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ${m % 60}m`;
+      const d = Math.floor(h / 24);
+      return `${d}d ${h % 24}h`;
+    }
+  };
+
+  /* ==========================================================================
+     MODULE 6: CLIENT FILE I/O & UI CONTROLLER (F25)
+     ========================================================================== */
+  const App = {
+    activeMode: 'json',
+    outputView: 'raw',
+    theme: 'cyber',
+
+    init() {
+      this.theme = Storage.get('df_theme') || 'cyber';
+      this.applyTheme(this.theme);
+      this.activeMode = Storage.get('df_mode') || 'json';
+      this.switchMode(this.activeMode);
+      this.bindEvents();
+      this.loadSampleData();
+    },
+
+    applyTheme(t) {
+      this.theme = t;
+      document.body.className = `theme-${t}`;
+      Storage.set('df_theme', t);
+      const btn = document.getElementById('themeBtn');
+      if (btn) {
+        const names = { cyber: '🎨 Cyber', oled: '🌑 OLED', light: '☀️ Light' };
+        btn.textContent = names[t] || '🎨 Theme';
+      }
+    },
+
+    cycleTheme() {
+      const order = ['cyber', 'oled', 'light'];
+      const next = order[(order.indexOf(this.theme) + 1) % order.length];
+      this.applyTheme(next);
+    },
+
+    switchMode(mode) {
+      this.activeMode = mode;
+      Storage.set('df_mode', mode);
+
+      document.querySelectorAll('.mode-tabs .tab-btn').forEach(btn => {
+        const active = btn.dataset.mode === mode;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      document.querySelectorAll('.mode-toolbar-container .toolbar-sub').forEach(tb => {
+        tb.classList.toggle('active', tb.id === `tb-${mode}`);
+      });
+
+      const jwtTab = document.getElementById('viewJwtBtn');
+      if (mode === 'jwt') {
+        jwtTab.style.display = 'inline-block';
+        this.switchOutputView('jwt');
+      } else {
+        jwtTab.style.display = 'none';
+        if (this.outputView === 'jwt') this.switchOutputView('raw');
+      }
+
+      document.getElementById('inputFormatLabel').textContent = mode.toUpperCase();
+    },
+
+    switchOutputView(view) {
+      this.outputView = view;
+      document.getElementById('viewRawBtn').classList.toggle('active', view === 'raw');
+      document.getElementById('viewTreeBtn').classList.toggle('active', view === 'tree');
+      document.getElementById('viewJwtBtn').classList.toggle('active', view === 'jwt');
+
+      document.getElementById('outputEditor').classList.toggle('hidden', view !== 'raw');
+      document.getElementById('treeViewer').classList.toggle('hidden', view !== 'tree');
+      document.getElementById('jwtViewer').classList.toggle('hidden', view !== 'jwt');
+    },
+
+    setOutput(text, durationMs = 0) {
+      const editor = document.getElementById('outputEditor');
+      editor.value = text;
+      const chars = text.length;
+      const lines = text ? text.split('\n').length : 0;
+      const bytes = new TextEncoder().encode(text).length;
+
+      document.getElementById('outputMetrics').textContent = `${chars} chars · ${lines} lines · ${bytes} bytes`;
+      document.getElementById('transformTiming').textContent = `${durationMs.toFixed(1)} ms`;
+      this.setStatus('READY', 'ready');
+    },
+
+    setStatus(text, type = 'ready') {
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = text;
+      badge.className = `status-badge status-${type}`;
+    },
+
+    loadSampleData() {
+      if (this.activeMode === 'json') {
+        document.getElementById('inputEditor').value = JSON.stringify({
+          app: "1files Software Vault",
+          module: "DATA://FORGE",
+          offline: true,
+          utilities: ["JSON Studio", "CSV Converter", "YAML Parser", "Hex Dumper", "JWT Inspector"],
+          stats: { memoryMB: 0.8, zeroDependency: true }
+        }, null, 2);
+      } else if (this.activeMode === 'csv') {
+        document.getElementById('inputEditor').value = "id,name,role,status\n1,\"Alice \"\"Chief\"\" Doe\",Admin,Active\n2,Bob Smith,Engineer,Active\n3,Charlie Brown,Auditor,Pending";
+      } else if (this.activeMode === 'yaml') {
+        document.getElementById('inputEditor').value = "vault:\n  name: 1files\n  offline: true\n  tools:\n    - crypto\n    - audio\n    - data\n  version: 2.0";
+      } else if (this.activeMode === 'base64') {
+        document.getElementById('inputEditor').value = "Hello 1files Vault 2026! 🔐 🚀";
+      } else if (this.activeMode === 'hex') {
+        document.getElementById('inputEditor').value = "Zero-dependency single-file air-gapped cryptographic utilities.";
+      } else if (this.activeMode === 'jwt') {
+        const h = HexBase64Engine.encodeBase64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+        const p = HexBase64Engine.encodeBase64Url(JSON.stringify({
+          sub: "agent-m1",
+          name: "Vault Architect",
+          roles: ["admin", "developer"],
+          iat: Math.floor(Date.now() / 1000) - 3600,
+          exp: Math.floor(Date.now() / 1000) + 86400
+        }));
+        document.getElementById('inputEditor').value = `${h}.${p}.s3cr3t_s1gn4tur3_h4sh`;
+      }
+      this.updateInputTelemetry();
+    },
+
+    updateInputTelemetry() {
+      const text = document.getElementById('inputEditor').value;
+      const bytes = new TextEncoder().encode(text).length;
+      document.getElementById('telemetryDetail').textContent = `UTF-8 · ${bytes} bytes`;
+    },
+
+    bindEvents() {
+      // Theme
+      document.getElementById('themeBtn').addEventListener('click', () => this.cycleTheme());
+
+      // Mode tabs
+      document.querySelectorAll('.mode-tabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.switchMode(btn.dataset.mode);
+          this.loadSampleData();
+        });
+      });
+
+      // View toggle buttons
+      document.getElementById('viewRawBtn').addEventListener('click', () => this.switchOutputView('raw'));
+      document.getElementById('viewTreeBtn').addEventListener('click', () => {
+        this.switchOutputView('tree');
+        this.renderTree();
+      });
+      document.getElementById('viewJwtBtn').addEventListener('click', () => this.switchOutputView('jwt'));
+
+      // Tree toolbar
+      document.getElementById('treeExpandAll').addEventListener('click', () => {
+        document.querySelectorAll('.tree-children').forEach(c => c.style.display = 'block');
+        document.querySelectorAll('.tree-toggle').forEach(t => { t.textContent = '▼'; t.setAttribute('aria-expanded', 'true'); });
+      });
+      document.getElementById('treeCollapseAll').addEventListener('click', () => {
+        document.querySelectorAll('.tree-children').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tree-toggle').forEach(t => { t.textContent = '▶'; t.setAttribute('aria-expanded', 'false'); });
+      });
+
+      // Input Editor Telemetry
+      document.getElementById('inputEditor').addEventListener('input', () => this.updateInputTelemetry());
+
+      // Actions: Clear, Paste, Sample
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        document.getElementById('inputEditor').value = '';
+        this.updateInputTelemetry();
+      });
+
+      document.getElementById('pasteBtn').addEventListener('click', async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          document.getElementById('inputEditor').value = text;
+          this.updateInputTelemetry();
+        } catch (e) {
+          alert('Clipboard paste blocked or unsupported in this browser sandbox.');
+        }
+      });
+
+      document.getElementById('loadSampleBtn').addEventListener('click', () => this.loadSampleData());
+
+      // Actions: Copy, Download, Swap
+      document.getElementById('copyOutBtn').addEventListener('click', () => {
+        const out = document.getElementById('outputEditor').value;
+        if (out) {
+          navigator.clipboard.writeText(out);
+          const btn = document.getElementById('copyOutBtn');
+          const orig = btn.textContent;
+          btn.textContent = 'COPIED!';
+          setTimeout(() => btn.textContent = orig, 1500);
+        }
+      });
+
+      document.getElementById('downloadOutBtn').addEventListener('click', () => {
+        const out = document.getElementById('outputEditor').value;
+        if (!out) return;
+        const extMap = { json: 'json', csv: 'csv', yaml: 'yaml', base64: 'txt', hex: 'txt', jwt: 'json' };
+        const ext = extMap[this.activeMode] || 'txt';
+        const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `data-forge-export.${ext}`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      document.getElementById('swapIoBtn').addEventListener('click', () => {
+        const out = document.getElementById('outputEditor').value;
+        if (out) {
+          document.getElementById('inputEditor').value = out;
+          this.updateInputTelemetry();
+          this.setOutput('', 0);
+        }
+      });
+
+      // File Ingestion
+      const filePicker = document.getElementById('filePicker');
+      document.getElementById('filePickBtn').addEventListener('click', () => filePicker.click());
+      filePicker.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) this.loadFile(e.target.files[0]);
+      });
+
+      const dropZone = document.getElementById('dropZone');
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) this.loadFile(e.dataTransfer.files[0]);
+      });
+
+      // JSON Handlers
+      document.getElementById('jsonFmt2').addEventListener('click', () => this.transform(() => JsonStudio.format(this.getInput(), 2)));
+      document.getElementById('jsonFmt4').addEventListener('click', () => this.transform(() => JsonStudio.format(this.getInput(), 4)));
+      document.getElementById('jsonFmtTab').addEventListener('click', () => this.transform(() => JsonStudio.format(this.getInput(), '\t')));
+      document.getElementById('jsonMinify').addEventListener('click', () => this.transform(() => JsonStudio.minify(this.getInput())));
+      document.getElementById('jsonSort').addEventListener('click', () => this.transform(() => JsonStudio.sortKeysAlphabetically(this.getInput(), 2)));
+      document.getElementById('jsonViewTree').addEventListener('click', () => {
+        this.switchOutputView('tree');
+        this.renderTree();
+      });
+
+      // CSV Handlers
+      document.getElementById('csvToJsonBtn').addEventListener('click', () => {
+        const delim = document.getElementById('csvDelimSelect').value;
+        this.transform(() => CsvEngine.toJSON(this.getInput(), delim));
+      });
+      document.getElementById('jsonToCsvBtn').addEventListener('click', () => {
+        const delim = document.getElementById('csvDelimSelect').value;
+        const actualDelim = delim === 'auto' ? ',' : delim;
+        this.transform(() => CsvEngine.fromJSON(this.getInput(), actualDelim));
+      });
+      document.getElementById('csvToMdBtn').addEventListener('click', () => {
+        const delim = document.getElementById('csvDelimSelect').value;
+        this.transform(() => CsvEngine.toMarkdownTable(this.getInput(), delim));
+      });
+
+      // YAML Handlers
+      document.getElementById('yamlToJsonBtn').addEventListener('click', () => {
+        this.transform(() => {
+          const parsed = YamlEngine.parse(this.getInput());
+          return JSON.stringify(parsed, null, 2);
+        });
+      });
+      document.getElementById('jsonToYamlBtn').addEventListener('click', () => {
+        this.transform(() => {
+          const parsed = JSON.parse(this.getInput());
+          return YamlEngine.stringify(parsed);
+        });
+      });
+      document.getElementById('yamlBeautifyBtn').addEventListener('click', () => {
+        this.transform(() => {
+          const parsed = YamlEngine.parse(this.getInput());
+          return YamlEngine.stringify(parsed);
+        });
+      });
+
+      // Base64 Handlers
+      document.getElementById('b64EncodeBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.encodeBase64(this.getInput())));
+      document.getElementById('b64DecodeBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.decodeBase64(this.getInput())));
+      document.getElementById('b64UrlEncodeBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.encodeBase64Url(this.getInput())));
+      document.getElementById('b64UrlDecodeBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.decodeBase64Url(this.getInput())));
+
+      // Hex Handlers
+      document.getElementById('textToHexBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.dumpHex(this.getInput())));
+      document.getElementById('hexToTextBtn').addEventListener('click', () => this.transform(() => HexBase64Engine.fromHex(this.getInput())));
+      document.getElementById('hexStreamBtn').addEventListener('click', () => {
+        this.transform(() => {
+          const bytes = new TextEncoder().encode(this.getInput());
+          return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        });
+      });
+
+      // JWT Handlers
+      document.getElementById('jwtInspectBtn').addEventListener('click', () => this.inspectJwt());
+      document.getElementById('jwtSampleBtn').addEventListener('click', () => {
+        this.loadSampleData();
+        this.inspectJwt();
+      });
+
+      // Shortcuts Modal
+      const modal = document.getElementById('shortcutsModal');
+      const openModal = () => modal.removeAttribute('hidden');
+      const closeModal = () => modal.setAttribute('hidden', '');
+      document.getElementById('helpBtn').addEventListener('click', openModal);
+      document.getElementById('closeShortcutsBtn').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+        if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+          if (modal.hasAttribute('hidden')) openModal();
+          else closeModal();
+        }
+        if (e.altKey && e.key >= '1' && e.key <= '6') {
+          e.preventDefault();
+          const modes = ['json', 'csv', 'yaml', 'base64', 'hex', 'jwt'];
+          const m = modes[Number(e.key) - 1];
+          if (m) this.switchMode(m);
+        }
+        if (e.ctrlKey && e.altKey && (e.key === 's' || e.key === 'S')) {
+          e.preventDefault();
+          document.getElementById('swapIoBtn').click();
+        }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+          e.preventDefault();
+          document.getElementById('copyOutBtn').click();
+        }
+        if (e.ctrlKey && e.key === 'Enter') {
+          e.preventDefault();
+          this.executePrimary();
+        }
+      });
+    },
+
+    getInput() {
+      return document.getElementById('inputEditor').value;
+    },
+
+    transform(fn) {
+      const t0 = performance.now();
+      try {
+        const out = fn();
+        const elapsed = performance.now() - t0;
+        this.setOutput(out, elapsed);
+        if (this.outputView === 'tree') this.renderTree();
+      } catch (err) {
+        this.setStatus(`ERROR: ${err.message}`, 'error');
+        alert(`Transformation Error: ${err.message}`);
+      }
+    },
+
+    executePrimary() {
+      if (this.activeMode === 'json') document.getElementById('jsonFmt2').click();
+      else if (this.activeMode === 'csv') document.getElementById('csvToJsonBtn').click();
+      else if (this.activeMode === 'yaml') document.getElementById('yamlToJsonBtn').click();
+      else if (this.activeMode === 'base64') document.getElementById('b64EncodeBtn').click();
+      else if (this.activeMode === 'hex') document.getElementById('textToHexBtn').click();
+      else if (this.activeMode === 'jwt') document.getElementById('jwtInspectBtn').click();
+    },
+
+    renderTree() {
+      const text = document.getElementById('outputEditor').value || this.getInput();
+      const root = document.getElementById('treeRoot');
+      const meta = document.getElementById('treeMeta');
+      try {
+        const data = JSON.parse(text);
+        const count = JsonStudio.renderDOMTree(data, root);
+        meta.textContent = `${count} nodes`;
+      } catch (e) {
+        root.innerHTML = `<div style="color:var(--red); padding:10px">Invalid JSON for DOM Tree view: ${e.message}</div>`;
+        meta.textContent = `0 nodes`;
+      }
+    },
+
+    inspectJwt() {
+      const token = this.getInput();
+      try {
+        const jwt = JwtEngine.inspect(token);
+        this.switchOutputView('jwt');
+
+        const banner = document.getElementById('jwtStatusBanner');
+        banner.className = `jwt-status-banner ${jwt.isExpired ? 'jwt-expired' : 'jwt-valid'}`;
+        banner.textContent = jwt.isExpired ? `⛔ ${jwt.expStatus}` : `✓ ${jwt.expStatus}`;
+
+        document.getElementById('jwtHeaderPre').textContent = JSON.stringify(jwt.header, null, 2);
+        document.getElementById('jwtPayloadPre').textContent = JSON.stringify(jwt.payload, null, 2);
+        document.getElementById('jwtSigBox').textContent = jwt.signature;
+
+        const tableWrap = document.getElementById('jwtClaimsTable');
+        let html = '<table class="claims-table"><thead><tr><th>Claim</th><th>Description / Label</th><th>Value</th></tr></thead><tbody>';
+        jwt.claims.forEach(c => {
+          html += `<tr><td class="claim-name">${c.claim}</td><td>${c.label}</td><td>${c.value} ${c.desc ? `<div style="font-size:11px; color:var(--muted)">${c.desc}</div>` : ''}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        tableWrap.innerHTML = html;
+
+        this.setOutput(JSON.stringify(jwt.payload, null, 2), 0);
+      } catch (err) {
+        this.setStatus(`JWT ERROR: ${err.message}`, 'error');
+        alert(`JWT Inspection Error: ${err.message}`);
+      }
+    },
+
+    loadFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('inputEditor').value = e.target.result;
+        this.updateInputTelemetry();
+        this.setStatus(`LOADED: ${file.name}`, 'info');
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+  };
+
+  window.addEventListener('DOMContentLoaded', () => App.init());
+</script>

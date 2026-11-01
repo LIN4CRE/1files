@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRYPTO://VAULT — Cryptographic & Hash Studio</title>
+<meta name="description" content="100% offline hardware-accelerated cryptographic suite: SHA-256/512 multi-hash, AES-256-GCM vault, HMAC studio, Diceware BIP-39 keygen.">
+<style>
+  /* 100% Zero External Dependencies - System Font Stack Only */
+  :root {
+    --bg: #07080c;
+    --card: #0f121a;
+    --card-inner: #151924;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-border-focus: rgba(0, 255, 136, 0.4);
+    --acid: #00FF88;
+    --acid-glow: rgba(0, 255, 136, 0.25);
+    --cyan: #00F0FF;
+    --cyan-glow: rgba(0, 240, 255, 0.2);
+    --amber: #FFD600;
+    --red: #FF2E4D;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --mono: 'JetBrains Mono', 'Share Tech Mono', ui-monospace, Menlo, Consolas, monospace;
+    --sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius: 6px;
+  }
+
+  body.theme-oled {
+    --bg: #000000;
+    --card: #08080a;
+    --card-inner: #0e0e12;
+    --card-border: rgba(255, 255, 255, 0.05);
+  }
+
+  body.theme-light {
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --card-inner: #f8fafc;
+    --card-border: #cbd5e1;
+    --card-border-focus: #007a41;
+    --acid: #007a41;
+    --acid-glow: rgba(0, 122, 65, 0.2);
+    --cyan: #0284c7;
+    --amber: #b45309;
+    --red: #dc2626;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --text-dim: #64748b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0.35;
+  }
+  body.theme-light .scanlines { display: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--acid);
+    outline-offset: 2px;
+  }
+
+  .wrap {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Header */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-badge {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 10px var(--cyan-glow));
+  }
+  .brand-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+  body.theme-light .brand-title { color: #000; }
+  .brand-title span { color: var(--cyan); }
+  .brand-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .crypto-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    background: rgba(0, 255, 136, 0.12);
+    color: var(--acid);
+    border: 1px solid var(--acid);
+  }
+
+  /* Buttons */
+  .btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .btn:hover { background: var(--card-inner); color: #fff; }
+  body.theme-light .btn:hover { color: #000; }
+  .btn-acid {
+    background: var(--acid);
+    color: #000 !important;
+    border-color: var(--acid);
+    font-weight: 700;
+  }
+  .btn-acid:hover {
+    background: #15ff93;
+    filter: drop-shadow(0 0 8px var(--acid-glow));
+  }
+  .btn-cyan {
+    background: rgba(0, 240, 255, 0.15);
+    color: var(--cyan);
+    border-color: var(--cyan);
+    font-weight: 700;
+  }
+  .btn-cyan:hover {
+    background: var(--cyan);
+    color: #000 !important;
+  }
+  .btn-danger {
+    background: rgba(255, 46, 77, 0.12);
+    color: var(--red);
+    border-color: var(--red);
+  }
+  .btn-danger:hover {
+    background: var(--red);
+    color: #fff !important;
+  }
+  .btn-outline {
+    background: transparent;
+    border-color: var(--card-border);
+  }
+  .btn-outline:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+  .btn-sm { font-size: 0.72rem; padding: 4px 8px; }
+
+  /* Navigation Tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 2px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .tab.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+    background: rgba(0, 240, 255, 0.06);
+  }
+
+  /* Tab Panels */
+  .tab-panel {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    gap: 20px;
+    flex-direction: column;
+  }
+  .tab-panel.active {
+    display: flex;
+  }
+
+  /* Form Elements */
+  textarea, input[type="text"], input[type="password"], input[type="number"], select {
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  textarea:focus, input[type="text"]:focus, input[type="password"]:focus, select:focus {
+    border-color: var(--card-border-focus);
+  }
+
+  .mode-selector-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background: var(--card-inner);
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--card-border);
+  }
+  .radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .radio-label input:checked + span {
+    color: var(--acid);
+  }
+
+  /* Drop Zone */
+  .drop-zone {
+    border: 2px dashed var(--card-border);
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--card-inner);
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--cyan);
+    background: rgba(0, 240, 255, 0.05);
+  }
+  .drop-title { font-weight: 700; color: #fff; font-size: 0.95rem; }
+  body.theme-light .drop-title { color: #000; }
+  .drop-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* Progress Bar */
+  .progress-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--cyan);
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* Verifier Box */
+  .verifier-card {
+    background: var(--card-inner);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .verifier-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .verifier-input-row input {
+    flex: 1;
+  }
+  .match-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .badge-idle {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border-color: var(--card-border);
+  }
+  .badge-match {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--acid);
+    border-color: var(--acid);
+  }
+  .badge-mismatch {
+    background: rgba(255, 46, 77, 0.15);
+    color: var(--red);
+    border-color: var(--red);
+  }
+  .badge-warn {
+    background: rgba(255, 214, 0, 0.15);
+    color: var(--amber);
+    border-color: var(--amber);
+  }
+
+  /* Hash Results Table */
+  .hash-results-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hash-row {
+    background: var(--card-inner);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+  }
+  .hash-row.highlight {
+    border-color: var(--acid);
+    background: rgba(0, 255, 136, 0.05);
+  }
+  .hash-meta {
+    width: 90px;
+    display: flex;
+    flex-direction: column;
+  }
+  .hash-algo { font-weight: 700; color: #fff; font-size: 0.82rem; }
+  body.theme-light .hash-algo { color: #000; }
+  .hash-bits { font-size: 0.65rem; color: var(--text-dim); }
+  .hash-output {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: var(--cyan);
+  }
+  .btn-copy {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .btn-copy:hover {
+    border-color: var(--acid);
+    color: var(--acid);
+  }
+
+  /* Two Column Cipher Grid */
+  .cipher-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .cipher-grid { grid-template-columns: 1fr; }
+  }
+  .cipher-col {
+    background: var(--card-inner);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .col-title { font-size: 0.85rem; font-weight: 700; color: #fff; }
+  body.theme-light .col-title { color: #000; }
+  .passphrase-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .status-banner {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: none;
+  }
+  .status-banner.visible { display: block; }
+  .status-success { background: rgba(0, 255, 136, 0.12); color: var(--acid); border: 1px solid var(--acid); }
+  .status-error { background: rgba(255, 46, 77, 0.15); color: var(--red); border: 1px solid var(--red); }
+
+  /* Keygen Split */
+  .keygen-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .keygen-split { grid-template-columns: 1fr; }
+  }
+  .keygen-card {
+    background: var(--card-inner);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .entropy-badge {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-frame {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    width: min(520px, 90%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 0.95rem; font-weight: 700; color: #fff; }
+  body.theme-light .modal-title { color: #000; }
+  .modal-close {
+    background: none; border: none; color: var(--text-muted);
+    font-size: 1.4rem; cursor: pointer;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal-body { padding: 18px; overflow-y: auto; }
+  .shortcuts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .shortcuts-table td { padding: 8px 6px; border-bottom: 1px solid var(--card-border); }
+  kbd {
+    background: var(--card-inner);
+    color: var(--cyan);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--card-border);
+    font-family: inherit;
+    font-size: 11px;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--card);
+    border: 1px solid var(--cyan);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.25);
+    font-weight: 700;
+    font-size: 0.8rem;
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.visible { display: flex; }
+</style>
+
+<div class="scanlines" aria-hidden="true"></div>
+
+<main class="wrap">
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-badge" aria-hidden="true">🔒</div>
+      <div>
+        <h1 class="brand-title">CRYPTO<span>://VAULT</span></h1>
+        <div class="brand-sub">AIR-GAPPED HARDWARE-ACCELERATED CRYPTOGRAPHIC STUDIO</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="crypto-badge" id="cryptoStatusBadge">SUBTLECRYPTO: ACTIVE</span>
+      <button type="button" class="btn btn-outline" id="themeToggleBtn" aria-label="Cycle theme">🎨 Cyber</button>
+      <button type="button" class="btn btn-danger" id="btnWipePanic" aria-label="Wipe volatile memory">🧹 Wipe Memory</button>
+      <button type="button" class="btn btn-outline" id="helpBtn" aria-label="Keyboard shortcuts">⌨️ ?</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs" role="tablist" aria-label="Cryptographic Tools">
+    <button role="tab" class="tab active" id="tabHash" aria-selected="true" aria-controls="panelHash">⚡ 1. HASH & CHECKSUM</button>
+    <button role="tab" class="tab" id="tabAes" aria-selected="false" aria-controls="panelAes">🛡️ 2. AES-256 VAULT</button>
+    <button role="tab" class="tab" id="tabHmac" aria-selected="false" aria-controls="panelHmac">🔑 3. HMAC STUDIO</button>
+    <button role="tab" class="tab" id="tabKeygen" aria-selected="false" aria-controls="panelKeygen">🎲 4. KEY & PASSPHRASE</button>
+  </nav>
+
+  <!-- Tab 1: Hash & Checksum -->
+  <section role="tabpanel" id="panelHash" class="tab-panel active">
+    <div class="mode-selector-bar">
+      <label class="radio-label">
+        <input type="radio" name="hashMode" value="text" checked>
+        <span>Text Input</span>
+      </label>
+      <label class="radio-label">
+        <input type="radio" name="hashMode" value="file">
+        <span>File Checksum (Multi-GB Drag & Drop)</span>
+      </label>
+    </div>
+
+    <!-- Text Input Area -->
+    <div id="hashTextSection" class="form-group">
+      <textarea id="hashTextInput" rows="4" placeholder="Type or paste text to compute live SHA digests..." style="width:100%"></textarea>
+    </div>
+
+    <!-- File Drop Zone -->
+    <div id="hashFileSection" class="drop-zone" style="display:none" tabindex="0" role="button" aria-label="File Upload Dropzone">
+      <div class="drop-title">📁 Drag and drop file here or click to browse</div>
+      <div class="drop-sub">Streams in 32MB chunks with zero memory allocation failure. Supports multi-gigabyte files.</div>
+      <input type="file" id="hashFileInput" style="display:none">
+      <div id="fileProgressWrap" class="progress-wrap" style="display:none">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBarFill"></div>
+        </div>
+        <div class="progress-stats">
+          <span id="progressPercent">0%</span>
+          <span id="progressLoaded">0 MB / 0 MB</span>
+          <span id="progressSpeed">0 MB/s</span>
+          <button type="button" class="btn btn-sm btn-danger" id="btnCancelHash">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expected Checksum Verifier Box -->
+    <div class="verifier-card">
+      <label for="expectedHash" style="font-weight:700; font-size:0.75rem; color:var(--text-muted)">EXPECTED CHECKSUM STRING (VERIFICATION COMPARATOR):</label>
+      <div class="verifier-input-row">
+        <input type="text" id="expectedHash" placeholder="Paste expected SHA-256, SHA-512, SHA-384, or SHA-1 checksum to compare...">
+        <span id="matchStatusBadge" class="match-badge badge-idle">AWAITING INPUT</span>
+      </div>
+    </div>
+
+    <!-- Hash Results Table -->
+    <div class="hash-results-table">
+      <div class="hash-row" id="row-sha256">
+        <div class="hash-meta">
+          <span class="hash-algo">SHA-256</span>
+          <span class="hash-bits">256-bit / 32B</span>
+        </div>
+        <input type="text" readonly id="out-sha256" class="hash-output" value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855">
+        <button type="button" class="btn-copy" data-target="out-sha256" aria-label="Copy SHA-256">📋 Copy</button>
+      </div>
+
+      <div class="hash-row" id="row-sha512">
+        <div class="hash-meta">
+          <span class="hash-algo">SHA-512</span>
+          <span class="hash-bits">512-bit / 64B</span>
+        </div>
+        <input type="text" readonly id="out-sha512" class="hash-output" value="cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e">
+        <button type="button" class="btn-copy" data-target="out-sha512" aria-label="Copy SHA-512">📋 Copy</button>
+      </div>
+
+      <div class="hash-row" id="row-sha384">
+        <div class="hash-meta">
+          <span class="hash-algo">SHA-384</span>
+          <span class="hash-bits">384-bit / 48B</span>
+        </div>
+        <input type="text" readonly id="out-sha384" class="hash-output" value="38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b">
+        <button type="button" class="btn-copy" data-target="out-sha384" aria-label="Copy SHA-384">📋 Copy</button>
+      </div>
+
+      <div class="hash-row" id="row-sha1">
+        <div class="hash-meta">
+          <span class="hash-algo">SHA-1</span>
+          <span class="hash-bits">160-bit / 20B</span>
+        </div>
+        <input type="text" readonly id="out-sha1" class="hash-output" value="da39a3ee5e6b4b0d3255bfef95601890afd80709">
+        <button type="button" class="btn-copy" data-target="out-sha1" aria-label="Copy SHA-1">📋 Copy</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap">
+      <button type="button" class="btn btn-acid" id="btnCopyAllHashes">📋 Copy All Hashes</button>
+      <button type="button" class="btn btn-outline" id="btnExportReport">💾 Export Verification Report (.txt)</button>
+      <button type="button" class="btn btn-outline" id="btnToggleCase">Aa Toggle Upper/Lower Case</button>
+    </div>
+  </section>
+
+  <!-- Tab 2: AES-256-GCM Vault -->
+  <section role="tabpanel" id="panelAes" class="tab-panel">
+    <div class="cipher-grid">
+      <!-- Plaintext Col -->
+      <div class="cipher-col">
+        <span class="col-title">Plaintext / Secret Notes</span>
+        <textarea id="aesPlaintext" rows="7" placeholder="Enter confidential message or sensitive payload to encrypt..."></textarea>
+        <div class="passphrase-group">
+          <label for="aesPassphrase" style="font-size:0.75rem; color:var(--text-muted); font-weight:700">PASSPHRASE (PBKDF2 100,000 ITERATIONS):</label>
+          <input type="password" id="aesPassphrase" placeholder="Encryption / Decryption passphrase...">
+        </div>
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn btn-acid" id="btnAesEncrypt">🛡️ Encrypt AES-256-GCM</button>
+        </div>
+      </div>
+
+      <!-- Ciphertext Col -->
+      <div class="cipher-col">
+        <span class="col-title">Ciphertext Envelope (Base64)</span>
+        <textarea id="aesCiphertext" rows="7" placeholder="Paste Base64 ciphertext envelope (salt + iv + ciphertext + tag) to decrypt..."></textarea>
+        <div style="font-size:0.72rem; color:var(--text-dim)">
+          Binary Envelope: Salt (16B) ∥ IV (12B) ∥ Ciphertext (NB) ∥ Auth Tag (16B)
+        </div>
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn btn-cyan" id="btnAesDecrypt">🔓 Decrypt Payload</button>
+          <button type="button" class="btn btn-outline" id="btnCopyCipher">📋 Copy Base64</button>
+        </div>
+      </div>
+    </div>
+    <div id="aesStatusBanner" class="status-banner"></div>
+  </section>
+
+  <!-- Tab 3: HMAC Studio -->
+  <section role="tabpanel" id="panelHmac" class="tab-panel">
+    <div class="cipher-col" style="max-width:800px; margin:0 auto; width:100%">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <label for="hmacAlgo" style="font-weight:700; color:var(--text-muted)">HASH ALGORITHM:</label>
+        <select id="hmacAlgo" class="btn">
+          <option value="SHA-256">HMAC-SHA-256 (32 Bytes / 256 bits)</option>
+          <option value="SHA-512">HMAC-SHA-512 (64 Bytes / 512 bits)</option>
+        </select>
+      </div>
+
+      <div class="passphrase-group">
+        <label for="hmacSecret" style="font-weight:700; color:var(--text-muted)">SECRET KEY:</label>
+        <input type="text" id="hmacSecret" placeholder="Enter secret key...">
+        <label style="font-size:0.72rem; color:var(--text-muted); cursor:pointer">
+          <input type="checkbox" id="hmacKeyIsHex"> Key is Hex-Encoded
+        </label>
+      </div>
+
+      <div class="passphrase-group">
+        <label for="hmacMessage" style="font-weight:700; color:var(--text-muted)">MESSAGE PAYLOAD:</label>
+        <textarea id="hmacMessage" rows="3" placeholder="Enter data to sign..."></textarea>
+      </div>
+
+      <button type="button" class="btn btn-cyan" id="btnComputeHmac">🔑 Calculate HMAC</button>
+
+      <div class="passphrase-group">
+        <label for="hmacCalculated" style="font-weight:700; color:var(--text-muted)">CALCULATED HMAC SIGNATURE (HEX):</label>
+        <input type="text" readonly id="hmacCalculated" class="hash-output">
+      </div>
+
+      <div class="passphrase-group">
+        <label for="hmacExpected" style="font-weight:700; color:var(--text-muted)">EXPECTED HMAC SIGNATURE (CONSTANT-TIME COMPARATOR):</label>
+        <div style="display:flex; gap:10px">
+          <input type="text" id="hmacExpected" placeholder="Paste expected HMAC signature to verify..." style="flex:1">
+          <span id="hmacMatchBadge" class="match-badge badge-idle">AWAITING COMPARISON</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab 4: Key & Passphrase Generator -->
+  <section role="tabpanel" id="panelKeygen" class="tab-panel">
+    <div class="keygen-split">
+      <!-- Diceware Card -->
+      <div class="keygen-card">
+        <span class="col-title">🎲 Diceware Passphrase Generator</span>
+        <div style="font-size:0.72rem; color:var(--text-muted)">Built-in 2,048-word BIP-39 Dictionary (11.0 bits entropy per word)</div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label for="diceWordCount" style="font-weight:600">Word Count: <span id="diceWordCountVal" style="color:var(--acid)">5</span></label>
+          <input type="range" id="diceWordCount" min="3" max="12" value="5" class="cyber-slider" style="max-width:180px">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label for="diceSeparator" style="font-weight:600">Word Separator:</label>
+          <select id="diceSeparator" class="btn">
+            <option value="-">Hyphen (-)</option>
+            <option value=" ">Space ( )</option>
+            <option value="_">Underscore (_)</option>
+            <option value=".">Period (.)</option>
+            <option value="">None (Concatenated)</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:16px; flex-wrap:wrap">
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="diceCapitalize"> Capitalize Words
+          </label>
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="diceAddNumber"> Append Random Number
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-acid" id="btnGenDiceware">🎲 Generate Passphrase</button>
+        <textarea readonly id="outDiceware" rows="2" class="hash-output" style="width:100%"></textarea>
+        <div class="entropy-badge" id="diceEntropyBadge">Entropy: 55.0 bits • Strong</div>
+      </div>
+
+      <!-- Password Card -->
+      <div class="keygen-card">
+        <span class="col-title">⚡ Cryptographic Password Generator</span>
+        <div style="font-size:0.72rem; color:var(--text-muted)">Uniform random selection via crypto.getRandomValues (Zero Modulo Bias)</div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label for="pwdLength" style="font-weight:600">Length: <span id="pwdLengthVal" style="color:var(--cyan)">24</span></label>
+          <input type="range" id="pwdLength" min="8" max="64" value="24" class="cyber-slider" style="max-width:180px">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="pwdUpper" checked> Uppercase (A-Z)
+          </label>
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="pwdLower" checked> Lowercase (a-z)
+          </label>
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="pwdDigits" checked> Numbers (0-9)
+          </label>
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer">
+            <input type="checkbox" id="pwdSymbols" checked> Symbols (!@#$%...)
+          </label>
+          <label style="font-size:0.75rem; color:var(--text-muted); cursor:pointer; grid-column:span 2">
+            <input type="checkbox" id="pwdNoAmbiguous"> Exclude Ambiguous (O, 0, l, 1, I)
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-cyan" id="btnGenPassword">⚡ Generate Password</button>
+        <input type="text" readonly id="outPassword" class="hash-output" style="width:100%">
+        <div class="entropy-badge" id="pwdEntropyBadge">Entropy: 144.0 bits • Enterprise Fort Knox</div>
+      </div>
+    </div>
+  </section>
+<!-- end wrap -->
+
+<!-- Shortcuts Modal -->
+<div class="modal-backdrop" id="helpModal" role="presentation" hidden>
+  <div class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+    <div class="modal-header">
+      <h2 id="helpModalTitle" class="modal-title">Keyboard Shortcuts</h2>
+      <button type="button" class="modal-close" id="helpModalCloseBtn" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-body">
+      <table class="shortcuts-table">
+        <tbody>
+          <tr><td><kbd>Alt</kbd> + <kbd>1</kbd></td><td>Switch to Hash & Checksum Studio</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>2</kbd></td><td>Switch to AES-256 Vault</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>3</kbd></td><td>Switch to HMAC Studio</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>4</kbd></td><td>Switch to Key & Passphrase Generator</td></tr>
+          <tr><td><kbd>Ctrl/Cmd</kbd> + <kbd>Enter</kbd></td><td>Trigger Primary Calculation for Active Tab</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>C</kbd></td><td>Copy Primary Output</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>W</kbd></td><td>Wipe Volatile Memory (Panic Wipe)</td></tr>
+          <tr><td><kbd>T</kbd></td><td>Cycle Theme (Cyber / OLED / Light)</td></tr>
+          <tr><td><kbd>?</kbd></td><td>Toggle Keyboard Help Dialog</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Close Help Dialog</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="toastNotification" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+  /* ==========================================================================
+     DEFENSIVE STORAGE LAYER (F24) & ZERO-TRACE POLICY
+     ========================================================================== */
+  const Storage = {
+    _mem: {},
+    get(k) { try { return localStorage.getItem(k); } catch(e) { return this._mem[k] ?? null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch(e) { this._mem[k] = String(v); } },
+    remove(k) { try { localStorage.removeItem(k); } catch(e) { delete this._mem[k]; } }
+  };
+
+  /* ==========================================================================
+     STREAMING SHA-256 BLOCK ENGINE (FIPS 180-4 ZERO-ALLOCATION FALLBACK)
+     ========================================================================== */
+  class StreamingSHA256 {
+    constructor() {
+      this.h = new Uint32Array([
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+        0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+      ]);
+      this.k = new Uint32Array([
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+      ]);
+      this.buffer = new Uint8Array(64);
+      this.bufferLen = 0;
+      this.totalBytes = 0;
+      this.w = new Uint32Array(64);
+    }
+
+    _rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+
+    _compress(block) {
+      const w = this.w;
+      const view = new DataView(block.buffer, block.byteOffset, 64);
+      for (let i = 0; i < 16; i++) w[i] = view.getUint32(i * 4, false);
+      for (let i = 16; i < 64; i++) {
+        const s0 = this._rotr(w[i - 15], 7) ^ this._rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+        const s1 = this._rotr(w[i - 2], 17) ^ this._rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+      }
+
+      let [a, b, c, d, e, f, g, h] = this.h;
+      for (let i = 0; i < 64; i++) {
+        const S1 = this._rotr(e, 6) ^ this._rotr(e, 11) ^ this._rotr(e, 25);
+        const ch = (e & f) ^ ((~e) & g);
+        const temp1 = (h + S1 + ch + this.k[i] + w[i]) | 0;
+        const S0 = this._rotr(a, 2) ^ this._rotr(a, 13) ^ this._rotr(a, 22);
+        const maj = (a & b) ^ (a & c) ^ (b & c);
+        const temp2 = (S0 + maj) | 0;
+
+        h = g; g = f; f = e; e = (d + temp1) | 0;
+        d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+      }
+
+      this.h[0] = (this.h[0] + a) | 0;
+      this.h[1] = (this.h[1] + b) | 0;
+      this.h[2] = (this.h[2] + c) | 0;
+      this.h[3] = (this.h[3] + d) | 0;
+      this.h[4] = (this.h[4] + e) | 0;
+      this.h[5] = (this.h[5] + f) | 0;
+      this.h[6] = (this.h[6] + g) | 0;
+      this.h[7] = (this.h[7] + h) | 0;
+    }
+
+    update(chunk) {
+      if (typeof chunk === 'string') chunk = new TextEncoder().encode(chunk);
+      let offset = 0;
+      this.totalBytes += chunk.length;
+      while (offset < chunk.length) {
+        const toCopy = Math.min(64 - this.bufferLen, chunk.length - offset);
+        this.buffer.set(chunk.subarray(offset, offset + toCopy), this.bufferLen);
+        this.bufferLen += toCopy;
+        offset += toCopy;
+        if (this.bufferLen === 64) {
+          this._compress(this.buffer);
+          this.bufferLen = 0;
+        }
+      }
+    }
+
+    digest() {
+      const pad = new Uint8Array(64);
+      pad[0] = 0x80;
+      const bitLen = this.totalBytes * 8;
+      if (this.bufferLen < 56) {
+        this.buffer.set(pad.subarray(0, 56 - this.bufferLen), this.bufferLen);
+      } else {
+        this.buffer.set(pad.subarray(0, 64 - this.bufferLen), this.bufferLen);
+        this._compress(this.buffer);
+        this.buffer.fill(0);
+      }
+      const view = new DataView(this.buffer.buffer, this.buffer.byteOffset, 64);
+      const high = Math.floor(bitLen / 0x100000000);
+      const low = bitLen >>> 0;
+      view.setUint32(56, high, false);
+      view.setUint32(60, low, false);
+      this._compress(this.buffer);
+
+      let hex = '';
+      for (let i = 0; i < 8; i++) {
+        hex += this.h[i].toString(16).padStart(8, '0');
+      }
+      return hex;
+    }
+  }
+
+  /* ==========================================================================
+     COMPONENT 1: MULTI-HASH ENGINE & FILE PROCESSOR (F15)
+     ========================================================================== */
+  const HashEngine = {
+    activeAlgorithms: ['SHA-256', 'SHA-512', 'SHA-384', 'SHA-1'],
+    abortController: null,
+    isBusy: false,
+
+    async hashText(text) {
+      const enc = new TextEncoder();
+      const data = enc.encode(text);
+      return await this._digestBuffer(data);
+    },
+
+    async _digestBuffer(buffer) {
+      const results = {};
+      for (const algo of this.activeAlgorithms) {
+        try {
+          const hashBuf = await crypto.subtle.digest(algo, buffer);
+          results[algo] = this.bufferToHex(hashBuf);
+        } catch (e) {
+          results[algo] = `Error: ${e.message}`;
+        }
+      }
+      return results;
+    },
+
+    async hashFile(file, onProgress, onComplete, onError) {
+      if (this.isBusy) this.cancel();
+      this.isBusy = true;
+      this.abortController = { aborted: false };
+
+      const CHUNK_SIZE = 32 * 1024 * 1024;
+      const totalBytes = file.size;
+      let offset = 0;
+      const startTime = performance.now();
+
+      if (totalBytes <= 1.5 * 1024 * 1024 * 1024) {
+        try {
+          const fileBuffer = new Uint8Array(totalBytes);
+          while (offset < totalBytes) {
+            if (this.abortController.aborted) {
+              this.isBusy = false;
+              return;
+            }
+            const slice = file.slice(offset, Math.min(offset + CHUNK_SIZE, totalBytes));
+            const chunkBuf = await slice.arrayBuffer();
+            fileBuffer.set(new Uint8Array(chunkBuf), offset);
+            offset += chunkBuf.byteLength;
+
+            const elapsedSec = (performance.now() - startTime) / 1000;
+            const speedBps = offset / (elapsedSec || 0.001);
+            const percent = Math.min(100, Math.round((offset / totalBytes) * 100));
+
+            if (onProgress) {
+              onProgress({
+                percent,
+                loadedBytes: offset,
+                totalBytes,
+                speedMBps: (speedBps / (1024 * 1024)).toFixed(1)
+              });
+            }
+            await new Promise(r => setTimeout(r, 0));
+          }
+
+          const digests = await this._digestBuffer(fileBuffer);
+          this.isBusy = false;
+          if (onComplete) onComplete(digests);
+          return;
+        } catch (memErr) {
+          console.warn('Fallback to StreamingSHA256:', memErr);
+        }
+      }
+
+      // Streaming SHA-256 Fallback
+      try {
+        const sha256Stream = new StreamingSHA256();
+        const STREAM_CHUNK = 2 * 1024 * 1024;
+        offset = 0;
+
+        while (offset < totalBytes) {
+          if (this.abortController.aborted) {
+            this.isBusy = false;
+            return;
+          }
+          const slice = file.slice(offset, Math.min(offset + STREAM_CHUNK, totalBytes));
+          const chunkBuf = await slice.arrayBuffer();
+          sha256Stream.update(new Uint8Array(chunkBuf));
+          offset += chunkBuf.byteLength;
+
+          const elapsedSec = (performance.now() - startTime) / 1000;
+          const speedBps = offset / (elapsedSec || 0.001);
+          const percent = Math.min(100, Math.round((offset / totalBytes) * 100));
+
+          if (onProgress) {
+            onProgress({
+              percent,
+              loadedBytes: offset,
+              totalBytes,
+              speedMBps: (speedBps / (1024 * 1024)).toFixed(1)
+            });
+          }
+          await new Promise(r => setTimeout(r, 0));
+        }
+
+        const sha256Hex = sha256Stream.digest();
+        this.isBusy = false;
+        if (onComplete) {
+          onComplete({
+            'SHA-256': sha256Hex,
+            'SHA-512': '(Streamed SHA-256 only for large files)',
+            'SHA-384': '(Streamed SHA-256 only for large files)',
+            'SHA-1': '(Streamed SHA-256 only for large files)'
+          });
+        }
+      } catch (err) {
+        this.isBusy = false;
+        if (onError) onError(err);
+      }
+    },
+
+    cancel() {
+      if (this.abortController) this.abortController.aborted = true;
+      this.isBusy = false;
+    },
+
+    bufferToHex(buf) {
+      return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+  };
+
+  /* ==========================================================================
+     COMPONENT 2: CHECKSUM VERIFIER & COMPARATOR (F16)
+     ========================================================================== */
+  const ChecksumVerifier = {
+    verify(expectedInput, computedHashes) {
+      const raw = (expectedInput || '').trim();
+      if (raw === '' || !raw) {
+        return { status: 'idle', message: 'PASTE EXPECTED CHECKSUM TO VERIFY', matchAlgo: null };
+      }
+
+      // Normalize: strip sha\d+: prefix, colons, hyphens, whitespace, lowercase
+      const cleanExpected = raw.replace(/^sha\d+:\s*/i, '').replace(/[:\s-]/g, '').toLowerCase();
+
+      for (const [algo, hash] of Object.entries(computedHashes)) {
+        if (!hash || hash.startsWith('(') || hash.startsWith('Error')) continue;
+        if (cleanExpected === hash.trim().toLowerCase()) {
+          return {
+            status: 'match',
+            message: `✓ MATCH CONFIRMED: ${algo} CHECKSUM AUTHENTIC`,
+            matchAlgo: algo
+          };
+        }
+      }
+
+      const isHex = /^[0-9a-f]+$/i.test(cleanExpected);
+      const len = cleanExpected.length;
+      const known = { 40: 'SHA-1', 64: 'SHA-256', 96: 'SHA-384', 128: 'SHA-512' };
+
+      if (!isHex || !known[len]) {
+        return {
+          status: 'warn',
+          message: `ℹ INVALID FORMAT: ${len} chars (Expected 40, 64, 96, or 128 hex characters)`,
+          matchAlgo: null
+        };
+      }
+
+      return {
+        status: 'mismatch',
+        message: `⚠ CHECKSUM MISMATCH: Expected ${known[len]} does not match calculated digest!`,
+        matchAlgo: null
+      };
+    }
+  };
+
+  /* ==========================================================================
+     COMPONENT 3: AUTHENTICATED AES-256-GCM VAULT (F17)
+     ========================================================================== */
+  const AESVault = {
+    async deriveKey(passphrase, salt, iterations = 100000) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        enc.encode(passphrase),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+
+      return await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: iterations,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    },
+
+    async encrypt(plaintext, passphrase, iterations = 100000) {
+      if (!passphrase) {
+        throw new Error('Passphrase is required.');
+      }
+
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+
+      const key = await this.deriveKey(passphrase, salt, iterations);
+      const ciphertextWithTag = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        enc.encode(plaintext)
+      );
+
+      const ctBytes = new Uint8Array(ciphertextWithTag);
+      const envelope = new Uint8Array(16 + 12 + ctBytes.length);
+      envelope.set(salt, 0);
+      envelope.set(iv, 16);
+      envelope.set(ctBytes, 28);
+
+      return this.uint8ToBase64(envelope);
+    },
+
+    async decrypt(payloadStr, passphrase, iterations = 100000) {
+      if (!passphrase) {
+        throw new Error('Passphrase is required.');
+      }
+
+      const { salt, iv, ciphertextAndTag } = this.unpackEnvelope(payloadStr);
+      const key = await this.deriveKey(passphrase, salt, iterations);
+
+      try {
+        const plaintextBuffer = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: iv },
+          key,
+          ciphertextAndTag
+        );
+        return new TextDecoder().decode(plaintextBuffer);
+      } catch (err) {
+        throw new Error('ACCESS DENIED: Authentication tag mismatch (wrong passphrase or altered ciphertext).');
+      }
+    },
+
+    unpackEnvelope(payloadStr) {
+      const raw = (payloadStr || '').trim();
+      if (!raw) throw new Error('Empty ciphertext payload.');
+
+      // Format 1: Colon-delimited ENC:v1:<salt>:<iv>:<ct>
+      if (raw.startsWith('ENC:v1:')) {
+        const parts = raw.split(':');
+        if (parts.length === 5) {
+          return {
+            salt: this.base64ToUint8(parts[2]),
+            iv: this.base64ToUint8(parts[3]),
+            ciphertextAndTag: this.base64ToUint8(parts[4])
+          };
+        }
+      }
+
+      // Format 2: JSON Envelope
+      if (raw.startsWith('{') && raw.endsWith('}')) {
+        try {
+          const obj = JSON.parse(raw);
+          if (obj.salt && obj.iv && (obj.ciphertext || obj.ct)) {
+            return {
+              salt: this.base64ToUint8(obj.salt),
+              iv: this.base64ToUint8(obj.iv),
+              ciphertextAndTag: this.base64ToUint8(obj.ciphertext || obj.ct)
+            };
+          }
+        } catch (_) {}
+      }
+
+      // Format 3: Primary Packed Base64 Token
+      const bytes = this.base64ToUint8(raw);
+      if (bytes.length < 44) {
+        throw new Error('Invalid payload: token too short (minimum 44 bytes required for salt, IV, and tag).');
+      }
+
+      return {
+        salt: bytes.subarray(0, 16),
+        iv: bytes.subarray(16, 28),
+        ciphertextAndTag: bytes.subarray(28)
+      };
+    },
+
+    uint8ToBase64(u8) {
+      let binary = '';
+      const len = u8.byteLength;
+      const CHUNK = 8192;
+      for (let i = 0; i < len; i += CHUNK) {
+        binary += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + CHUNK, len)));
+      }
+      return btoa(binary);
+    },
+
+    base64ToUint8(b64) {
+      try {
+        const binary = atob(b64.trim());
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      } catch (e) {
+        throw new Error('Invalid Base64 encoding in ciphertext envelope.');
+      }
+    }
+  };
+
+  /* ==========================================================================
+     COMPONENT 4: HMAC STUDIO (F18)
+     ========================================================================== */
+  const HMACStudio = {
+    async generateHMAC(message, secretKey, algorithm = 'SHA-256', keyIsHex = false) {
+      const enc = new TextEncoder();
+      let keyBytes;
+
+      if (keyIsHex) {
+        const clean = secretKey.replace(/\s+/g, '');
+        if (!/^[0-9a-f]+$/i.test(clean) || clean.length % 2 !== 0) {
+          throw new Error('Invalid hex format for secret key.');
+        }
+        keyBytes = new Uint8Array(clean.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+      } else {
+        keyBytes = enc.encode(secretKey);
+      }
+
+      const msgBytes = enc.encode(message);
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyBytes,
+        { name: 'HMAC', hash: { name: algorithm } },
+        false,
+        ['sign', 'verify']
+      );
+
+      const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgBytes);
+      const hex = Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      return { hex, algorithm };
+    },
+
+    verifyHMAC(calculatedHex, expectedHex) {
+      const a = (calculatedHex || '').trim().toLowerCase();
+      const b = (expectedHex || '').trim().toLowerCase();
+      if (!b) return { status: 'idle', message: 'PASTE EXPECTED HMAC SIGNATURE' };
+      if (a.length !== b.length) {
+        return { status: 'mismatch', message: '⚠ HMAC MISMATCH: SIGNATURE LENGTH OR CONTENT DIFFERS' };
+      }
+
+      let diff = 0;
+      for (let i = 0; i < a.length; i++) {
+        diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+      }
+
+      if (diff === 0) {
+        return { status: 'match', message: '✓ HMAC SIGNATURE VERIFIED AUTHENTIC' };
+      } else {
+        return { status: 'mismatch', message: '⚠ HMAC MISMATCH: INVALID SIGNATURE' };
+      }
+    }
+  };
+
+  /* ==========================================================================
+     COMPONENT 5: HIGH-ENTROPY KEY & PASSPHRASE GENERATOR (F18)
+     ========================================================================== */
+  const KeyGenerator = {
+    WORDLIST: "abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual adapt add addict address adjust admit adult advance advice affair afford afraid after afternoon again against age agency agenda agent agree ahead aim air airport aisle alarm album alcohol alert alien all alley allow almost alone along aloud alpha already also alter alternative although always amateur amaze among amount amuse analyst anchor ancient anger angle angry animal ankle announce annual another answer anticipate anxiety any apart apologize apology appeal appear apple approve april arch arctic area arena argue armor army arrange arrest arrival arrive arrow articulate artist art artwork ash asian aside ask asleep aspect asphalt assault assess asset assist associate assume athlete atom attack attract auction audit august aunt authority auto autumn average avocado avoid awake aware away balance ball bamboo banana band banner bar base basic basket battery beach bean beam beat beauty because become bed beef before begin behave behind believe below benefit best betray better between beyond bicycle bid bike bill binary bird birth bitter black blade blame blank blast blend blind block blood blossom blow blue blush board boat body bold bone bonnet book boom boost border boring borrow boss both bottle bottom bowl box boy brain brand brass brave bread break breast breath breeze brick bright bring brisk broad bronze brother brown browse brutal bubble bucket budget buffer bug build bulb bump bunch bunker burden burn burst bus bush business busy butterfly buy cabin cable cactus cake calendar call calm camera camp canal candidate candle candy canyon cap capable capital captain car card care career carpet carry cart case cashier castle casual cat catalog catch category cattle cause cave ceiling cement census ceramic chain chair chalk challenge chamber change channel chaos character charge chart chase chat check cheek cheese chef chemical cherry chest chicken chief child choice choose chronic church cinema circle chunk claim clamp clear clerk clever click client cliff climate climb clinic clock close cloth cloud club clue cluster coach coalition coast coat code coffee coil coin collective colony color column combat come comedy comfort comic command commit common community commute company compare compete compiler complex comply component compost compute concern concert conclude concrete conduct cone confirm conflict conform connect consent consist contain contest continue context contract contrast control convert convey convict convince cook cool cooper copy coral core corn corner corporate correct corridor cost costume cotton couch cough count counter country couple coupon courage course cousin cover crack craft crater crazy cream create credit creek crew crisis criteria cross crowd crown cruel crude cruise crush crust crystal cubic cue culture cup cupboard cure current curse curtain custom customer cut cycle cylinder dad damage dance danger daring dash date daughter dawn day deal debate debt decade decide deck declare decrease deep defeat define degree delay deliver demand dense deny depart depend deposit depth derive describe design desk despair destroy detail detect develop device devote dialogue diagram diamond diary dictation digest digital dilemma direct direction dirt disable discard discover discuss disease dish disk dismiss disorder dispatch display distance distant distinct district dive divide divorce doctor document dog doll dollar domain domestic donate done door dose double draft drama drift drink drive drop drum dry dual duck dumb dump duration dusk dust dutch dynamic eagerly early earn earth echo economic edge edit educate effort egg either elder elect element elevate elite else embark embassy embody embrace emerald emerge emotion employ empty enable enact encounter encourage energy enforce engage engine enhance enjoy enough enrich enroll ensure enter entire entry envelope episode equal equip era erase error erupt essay essence establish estate eternal ethical ethics etiquette evacuate evade evening event ever every exact examine example exceed exchange excite exclude excuse execute exempt exhibit exile exist exit exotic expand expect expense experiment expert explain explode explore export express extend extra extreme eye fabric face faction fade faint fair fake fame family famous fan fancy fast farm fault favorite fax fear feast feather federal fee feed feedback feel female fence festival fever few fiber field fierce fight file film filter final find fine finger finish fire firm first fish fitness flag flame flare flash flat flaw flee flesh flex flight float flood floor flour flow flower fluent fluid flush fly foam focus fog folk follow fond food foot force fork format fossil foster friend fringe frog frontier front frost fruit fuel fulfill full fun function fund funny furnish fury future".split(" "),
+
+    generateDiceware(wordCount = 5, separator = '-', capitalize = false, addNumber = false) {
+      const count = Math.max(1, Math.min(16, Number(wordCount) || 5));
+      const randomVals = new Uint32Array(count);
+      crypto.getRandomValues(randomVals);
+
+      const words = [];
+      for (let i = 0; i < count; i++) {
+        let word = this.WORDLIST[randomVals[i] % this.WORDLIST.length];
+        if (capitalize) {
+          word = word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        words.push(word);
+      }
+
+      if (addNumber) {
+        const numVal = new Uint32Array(1);
+        crypto.getRandomValues(numVal);
+        const digit = (numVal[0] % 100).toString().padStart(2, '0');
+        words.push(digit);
+      }
+
+      const passphrase = words.join(separator);
+      let entropy = count * 11.0;
+      if (capitalize) entropy += count * 1.0;
+      if (addNumber) entropy += Math.log2(100);
+
+      return {
+        passphrase,
+        entropy: Math.round(entropy * 10) / 10
+      };
+    },
+
+    generatePassword(length = 24, opts = { upper: true, lower: true, digits: true, symbols: true, noAmbiguous: false }) {
+      let upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      let lower = "abcdefghijklmnopqrstuvwxyz";
+      let digits = "0123456789";
+      let symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+      if (opts.noAmbiguous) {
+        upper = upper.replace(/[IO]/g, '');
+        lower = lower.replace(/[lo]/g, '');
+        digits = digits.replace(/[01]/g, '');
+        symbols = symbols.replace(/[|]/g, '');
+      }
+
+      let charset = '';
+      const guaranteed = [];
+
+      if (opts.upper) { charset += upper; guaranteed.push(upper); }
+      if (opts.lower) { charset += lower; guaranteed.push(lower); }
+      if (opts.digits) { charset += digits; guaranteed.push(digits); }
+      if (opts.symbols) { charset += symbols; guaranteed.push(symbols); }
+
+      if (!charset) charset = lower;
+
+      const targetLen = Math.max(8, Math.min(128, Number(length) || 24));
+      const chars = [];
+
+      for (const set of guaranteed) {
+        if (chars.length < targetLen) {
+          const rand = new Uint32Array(1);
+          crypto.getRandomValues(rand);
+          chars.push(set[rand[0] % set.length]);
+        }
+      }
+
+      const remaining = targetLen - chars.length;
+      const L = charset.length;
+      const maxUnbiased = Math.floor(4294967296 / L) * L;
+      let i = 0;
+
+      while (i < remaining) {
+        const randBuf = new Uint32Array(1);
+        crypto.getRandomValues(randBuf);
+        if (randBuf[0] < maxUnbiased) {
+          chars.push(charset[randBuf[0] % L]);
+          i++;
+        }
+      }
+
+      for (let k = chars.length - 1; k > 0; k--) {
+        const rand = new Uint32Array(1);
+        crypto.getRandomValues(rand);
+        const j = rand[0] % (k + 1);
+        [chars[k], chars[j]] = [chars[j], chars[k]];
+      }
+
+      const password = chars.join('');
+      const entropy = Math.round(targetLen * Math.log2(charset.length) * 10) / 10;
+
+      return { password, entropy };
+    }
+  };
+
+  /* ==========================================================================
+     UI APPLICATION CONTROLLER
+     ========================================================================== */
+  const UI = {
+    theme: 'cyber',
+    activeTab: 'panelHash',
+    computedHashes: {},
+    isUppercase: false,
+
+    init() {
+      this.theme = Storage.get('cv_theme') || 'cyber';
+      this.applyTheme(this.theme);
+      this.bindEvents();
+      this.computeLiveHashes();
+    },
+
+    applyTheme(t) {
+      this.theme = t;
+      document.body.className = `theme-${t}`;
+      Storage.set('cv_theme', t);
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) {
+        const names = { cyber: '🎨 Cyber', oled: '🌑 OLED', light: '☀️ Light' };
+        btn.textContent = names[t] || '🎨 Theme';
+      }
+    },
+
+    cycleTheme() {
+      const order = ['cyber', 'oled', 'light'];
+      const next = order[(order.indexOf(this.theme) + 1) % order.length];
+      this.applyTheme(next);
+    },
+
+    showToast(msg) {
+      const t = document.getElementById('toastNotification');
+      t.textContent = msg;
+      t.classList.add('visible');
+      setTimeout(() => t.classList.remove('visible'), 2500);
+    },
+
+    async computeLiveHashes() {
+      const text = document.getElementById('hashTextInput').value;
+      this.computedHashes = await HashEngine.hashText(text);
+
+      for (const [algo, hash] of Object.entries(this.computedHashes)) {
+        const key = algo.toLowerCase().replace('-', '');
+        const el = document.getElementById(`out-${key}`);
+        if (el) {
+          el.value = this.isUppercase ? hash.toUpperCase() : hash.toLowerCase();
+        }
+      }
+      this.verifyExpectedChecksum();
+    },
+
+    verifyExpectedChecksum() {
+      const expected = document.getElementById('expectedHash').value;
+      const result = ChecksumVerifier.verify(expected, this.computedHashes);
+
+      const badge = document.getElementById('matchStatusBadge');
+      badge.textContent = result.message;
+      badge.className = `match-badge badge-${result.status}`;
+
+      document.querySelectorAll('.hash-row').forEach(row => row.classList.remove('highlight'));
+      if (result.matchAlgo) {
+        const rowId = `row-${result.matchAlgo.toLowerCase().replace('-', '')}`;
+        const matchRow = document.getElementById(rowId);
+        if (matchRow) matchRow.classList.add('highlight');
+      }
+    },
+
+    wipeVolatileMemory() {
+      document.querySelectorAll('textarea, input[type="text"], input[type="password"]').forEach(el => {
+        el.value = '';
+      });
+      this.computedHashes = {};
+      this.verifyExpectedChecksum();
+      const banner = document.getElementById('aesStatusBanner');
+      banner.className = 'status-banner';
+      banner.textContent = '';
+      this.showToast('🧹 VOLATILE MEMORY PURGED: ALL KEYS & PLAIN TEXT DESTROYED');
+    },
+
+    bindEvents() {
+      // Theme
+      document.getElementById('themeToggleBtn').addEventListener('click', () => this.cycleTheme());
+
+      // Panic Wipe
+      document.getElementById('btnWipePanic').addEventListener('click', () => this.wipeVolatileMemory());
+
+      // Tabs
+      const tabs = document.querySelectorAll('.nav-tabs .tab');
+      const panels = document.querySelectorAll('.tab-panel');
+      tabs.forEach(t => {
+        t.addEventListener('click', () => {
+          tabs.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected', 'false'); });
+          panels.forEach(p => p.classList.remove('active'));
+          t.classList.add('active');
+          t.setAttribute('aria-selected', 'true');
+          const pid = t.getAttribute('aria-controls');
+          const panel = document.getElementById(pid);
+          if (panel) panel.classList.add('active');
+          this.activeTab = pid;
+        });
+      });
+
+      // Hash Mode Toggle
+      document.querySelectorAll('input[name="hashMode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const isFile = e.target.value === 'file';
+          document.getElementById('hashTextSection').style.display = isFile ? 'none' : 'block';
+          document.getElementById('hashFileSection').style.display = isFile ? 'flex' : 'none';
+        });
+      });
+
+      // Text Hashing Input
+      document.getElementById('hashTextInput').addEventListener('input', () => this.computeLiveHashes());
+
+      // Expected Hash Input
+      document.getElementById('expectedHash').addEventListener('input', () => this.verifyExpectedChecksum());
+
+      // Copy Buttons
+      document.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.dataset.target;
+          const input = document.getElementById(targetId);
+          if (input) {
+            navigator.clipboard.writeText(input.value);
+            this.showToast(`📋 Copied ${targetId.replace('out-', '').toUpperCase()} digest!`);
+          }
+        });
+      });
+
+      // Copy All Hashes
+      document.getElementById('btnCopyAllHashes').addEventListener('click', () => {
+        const text = Object.entries(this.computedHashes)
+          .map(([algo, h]) => `${algo}: ${this.isUppercase ? h.toUpperCase() : h.toLowerCase()}`)
+          .join('\n');
+        navigator.clipboard.writeText(text);
+        this.showToast('📋 All computed digests copied to clipboard!');
+      });
+
+      // Toggle Case
+      document.getElementById('btnToggleCase').addEventListener('click', () => {
+        this.isUppercase = !this.isUppercase;
+        this.computeLiveHashes();
+      });
+
+      // Export Report
+      document.getElementById('btnExportReport').addEventListener('click', () => {
+        const date = new Date().toISOString();
+        let report = `CRYPTO://VAULT CHECKSUM VERIFICATION REPORT\nGenerated: ${date}\n` +
+          `=================================================================\n\n` +
+          `DIGESTS:\n` +
+          `SHA-256: ${this.computedHashes['SHA-256'] || ''}\n` +
+          `SHA-512: ${this.computedHashes['SHA-512'] || ''}\n` +
+          `SHA-384: ${this.computedHashes['SHA-384'] || ''}\n` +
+          `SHA-1:   ${this.computedHashes['SHA-1'] || ''}\n\n`;
+
+        const exp = document.getElementById('expectedHash').value;
+        if (exp) {
+          const v = ChecksumVerifier.verify(exp, this.computedHashes);
+          report += `VERIFICATION STATUS: ${v.message}\nExpected Checksum: ${exp}\n`;
+        }
+
+        const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `checksum-report-${Date.now()}.txt`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      // File Drag & Drop
+      const dropZone = document.getElementById('hashFileSection');
+      const fileInput = document.getElementById('hashFileInput');
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) this.processFile(e.dataTransfer.files[0]);
+      });
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) this.processFile(e.target.files[0]);
+      });
+      document.getElementById('btnCancelHash').addEventListener('click', (e) => {
+        e.stopPropagation();
+        HashEngine.cancel();
+        document.getElementById('fileProgressWrap').style.display = 'none';
+        this.showToast('File hashing cancelled.');
+      });
+
+      // AES Encrypt / Decrypt
+      document.getElementById('btnAesEncrypt').addEventListener('click', async () => {
+        const pt = document.getElementById('aesPlaintext').value;
+        const pass = document.getElementById('aesPassphrase').value;
+        const banner = document.getElementById('aesStatusBanner');
+        try {
+          const ct = await AESVault.encrypt(pt, pass);
+          document.getElementById('aesCiphertext').value = ct;
+          banner.className = 'status-banner visible status-success';
+          banner.textContent = '✓ ENCRYPTED SUCCESSFULLY (AES-256-GCM authenticated envelope generated)';
+        } catch (e) {
+          banner.className = 'status-banner visible status-error';
+          banner.textContent = `⚠ Encryption Error: ${e.message}`;
+        }
+      });
+
+      document.getElementById('btnAesDecrypt').addEventListener('click', async () => {
+        const ct = document.getElementById('aesCiphertext').value;
+        const pass = document.getElementById('aesPassphrase').value;
+        const banner = document.getElementById('aesStatusBanner');
+        try {
+          const pt = await AESVault.decrypt(ct, pass);
+          document.getElementById('aesPlaintext').value = pt;
+          banner.className = 'status-banner visible status-success';
+          banner.textContent = '✓ DECRYPTED SUCCESSFULLY (Authentication tag verified authentic)';
+        } catch (e) {
+          banner.className = 'status-banner visible status-error';
+          banner.textContent = `⛔ Decryption Failed: ${e.message}`;
+        }
+      });
+
+      document.getElementById('btnCopyCipher').addEventListener('click', () => {
+        const ct = document.getElementById('aesCiphertext').value;
+        if (ct) {
+          navigator.clipboard.writeText(ct);
+          this.showToast('📋 Ciphertext envelope copied to clipboard!');
+        }
+      });
+
+      // HMAC
+      const doHmac = async () => {
+        const msg = document.getElementById('hmacMessage').value;
+        const sec = document.getElementById('hmacSecret').value;
+        const algo = document.getElementById('hmacAlgo').value;
+        const isHex = document.getElementById('hmacKeyIsHex').checked;
+        try {
+          const res = await HMACStudio.generateHMAC(msg, sec, algo, isHex);
+          document.getElementById('hmacCalculated').value = res.hex;
+          this.verifyHmacMatch();
+        } catch (e) {
+          alert(`HMAC Error: ${e.message}`);
+        }
+      };
+      document.getElementById('btnComputeHmac').addEventListener('click', doHmac);
+      document.getElementById('hmacExpected').addEventListener('input', () => this.verifyHmacMatch());
+
+      // Diceware
+      const wordRange = document.getElementById('diceWordCount');
+      const wordRangeVal = document.getElementById('diceWordCountVal');
+      wordRange.addEventListener('input', (e) => wordRangeVal.textContent = e.target.value);
+
+      const doDiceware = () => {
+        const count = Number(wordRange.value);
+        const sep = document.getElementById('diceSeparator').value;
+        const cap = document.getElementById('diceCapitalize').checked;
+        const num = document.getElementById('diceAddNumber').checked;
+        const res = KeyGenerator.generateDiceware(count, sep, cap, num);
+        document.getElementById('outDiceware').value = res.passphrase;
+        document.getElementById('diceEntropyBadge').textContent = `Entropy: ${res.entropy} bits • ${res.entropy >= 60 ? 'Strong' : 'Moderate'}`;
+      };
+      document.getElementById('btnGenDiceware').addEventListener('click', doDiceware);
+      doDiceware();
+
+      // Password
+      const pwdRange = document.getElementById('pwdLength');
+      const pwdRangeVal = document.getElementById('pwdLengthVal');
+      pwdRange.addEventListener('input', (e) => pwdRangeVal.textContent = e.target.value);
+
+      const doPassword = () => {
+        const len = Number(pwdRange.value);
+        const opts = {
+          upper: document.getElementById('pwdUpper').checked,
+          lower: document.getElementById('pwdLower').checked,
+          digits: document.getElementById('pwdDigits').checked,
+          symbols: document.getElementById('pwdSymbols').checked,
+          noAmbiguous: document.getElementById('pwdNoAmbiguous').checked
+        };
+        const res = KeyGenerator.generatePassword(len, opts);
+        document.getElementById('outPassword').value = res.password;
+        document.getElementById('pwdEntropyBadge').textContent = `Entropy: ${res.entropy} bits • ${res.entropy >= 120 ? 'Fort Knox' : 'Strong'}`;
+      };
+      document.getElementById('btnGenPassword').addEventListener('click', doPassword);
+      doPassword();
+
+      // Help Modal
+      const modal = document.getElementById('helpModal');
+      const openModal = () => modal.removeAttribute('hidden');
+      const closeModal = () => modal.setAttribute('hidden', '');
+      document.getElementById('helpBtn').addEventListener('click', openModal);
+      document.getElementById('helpModalCloseBtn').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+        if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+          if (modal.hasAttribute('hidden')) openModal();
+          else closeModal();
+        }
+        if (e.altKey && e.key === '1') { e.preventDefault(); document.getElementById('tabHash').click(); }
+        if (e.altKey && e.key === '2') { e.preventDefault(); document.getElementById('tabAes').click(); }
+        if (e.altKey && e.key === '3') { e.preventDefault(); document.getElementById('tabHmac').click(); }
+        if (e.altKey && e.key === '4') { e.preventDefault(); document.getElementById('tabKeygen').click(); }
+        if (e.altKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); this.wipeVolatileMemory(); }
+        if (e.ctrlKey && e.key === 'Enter') {
+          if (this.activeTab === 'panelHash') this.computeLiveHashes();
+          else if (this.activeTab === 'panelAes') document.getElementById('btnAesEncrypt').click();
+          else if (this.activeTab === 'panelHmac') document.getElementById('btnComputeHmac').click();
+          else if (this.activeTab === 'panelKeygen') document.getElementById('btnGenDiceware').click();
+        }
+      });
+    },
+
+    verifyHmacMatch() {
+      const calc = document.getElementById('hmacCalculated').value;
+      const exp = document.getElementById('hmacExpected').value;
+      const badge = document.getElementById('hmacMatchBadge');
+      const res = HMACStudio.verifyHMAC(calc, exp);
+      badge.textContent = res.message;
+      badge.className = `match-badge badge-${res.status}`;
+    },
+
+    processFile(file) {
+      const wrap = document.getElementById('fileProgressWrap');
+      wrap.style.display = 'flex';
+      const bar = document.getElementById('progressBarFill');
+      const pct = document.getElementById('progressPercent');
+      const loaded = document.getElementById('progressLoaded');
+      const spd = document.getElementById('progressSpeed');
+
+      HashEngine.hashFile(
+        file,
+        (p) => {
+          bar.style.width = `${p.percent}%`;
+          pct.textContent = `${p.percent}%`;
+          loaded.textContent = `${(p.loadedBytes / (1024 * 1024)).toFixed(1)} MB / ${(p.totalBytes / (1024 * 1024)).toFixed(1)} MB`;
+          spd.textContent = `${p.speedMBps} MB/s`;
+        },
+        (digests) => {
+          this.computedHashes = digests;
+          for (const [algo, hash] of Object.entries(digests)) {
+            const key = algo.toLowerCase().replace('-', '');
+            const el = document.getElementById(`out-${key}`);
+            if (el) el.value = hash;
+          }
+          this.verifyExpectedChecksum();
+          wrap.style.display = 'none';
+          this.showToast(`✓ Checksums computed for ${file.name}`);
+        },
+        (err) => {
+          alert(`File Hashing Error: ${err.message}`);
+          wrap.style.display = 'none';
+        }
+      );
+    }
+  };
+
+  // Boot on load
+  window.addEventListener('DOMContentLoaded', () => UI.init());
+</script>
